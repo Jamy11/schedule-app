@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Employee, MgmtFields } from "@/types/schedule";
+import { useState, useMemo, useEffect } from "react";
+import { Employee, MgmtFields, EmployeeData } from "@/types/schedule";
 import {
   createEmployee,
   applyAutoBreaks,
   getBreakConflicts,
+  handleAddRow,
+  handleDeleteRow,
 } from "@/utils/scheduleUtils";
 import PageHeader from "@/components/schedule/PageHeader";
 import ShiftTable from "@/components/schedule/ShiftTable";
@@ -23,6 +25,8 @@ export default function SchedulePage() {
     Array.from({ length: 5 }, (_, i) => createEmployee(i + 100)),
   );
 
+  const [employeeData, setEmployeeData] = useState<EmployeeData[]>([]);
+
   const [mgmt, setMgmt] = useState<MgmtFields>({
     lodShift: "",
     lodHrs: "",
@@ -31,6 +35,13 @@ export default function SchedulePage() {
     receivingShift: "",
     bellShift: "",
   });
+
+  useEffect(() => {
+    fetch("/employees.json")
+      .then((res) => res.json())
+      .then((data) => setEmployeeData(data))
+      .catch((err) => console.error("Failed to load employees:", err));
+  }, []);
 
   function handleAutoBreaks() {
     setDayEmps((prev) => applyAutoBreaks(prev));
@@ -42,21 +53,19 @@ export default function SchedulePage() {
   }
 
   function handleAddDayRow() {
-    const maxId = Math.max(...dayEmps.map((e) => e.id), 0);
-    setDayEmps((prev) => [...prev, createEmployee(maxId + 1)]);
+    setDayEmps((prev) => handleAddRow(prev));
   }
 
   function handleAddEveRow() {
-    const maxId = Math.max(...eveEmps.map((e) => e.id), 0);
-    setEveEmps((prev) => [...prev, createEmployee(maxId + 1)]);
+    setEveEmps((prev) => handleAddRow(prev));
   }
 
   function handleDeleteDayRow(id: number) {
-    setDayEmps((prev) => prev.filter((e) => e.id !== id));
+    setDayEmps((prev) => handleDeleteRow(prev, id));
   }
 
   function handleDeleteEveRow(id: number) {
-    setEveEmps((prev) => prev.filter((e) => e.id !== id));
+    setEveEmps((prev) => handleDeleteRow(prev, id));
   }
 
   const conflicts = useMemo(
@@ -79,6 +88,7 @@ export default function SchedulePage() {
         <ShiftTable
           title="Day Shift"
           employees={dayEmps}
+          employeeData={employeeData}
           onChange={setDayEmps}
           onAddRow={handleAddDayRow}
           onDeleteRow={handleDeleteDayRow}
@@ -89,6 +99,7 @@ export default function SchedulePage() {
         <ShiftTable
           title="Evening Shift"
           employees={eveEmps}
+          employeeData={employeeData}
           onChange={setEveEmps}
           onAddRow={handleAddEveRow}
           onDeleteRow={handleDeleteEveRow}
