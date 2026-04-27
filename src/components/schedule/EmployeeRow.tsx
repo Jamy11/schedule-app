@@ -23,7 +23,11 @@ export default function EmployeeRow({
     onChange({ ...emp, [field]: value });
 
   const handleNameChange = (selectedName: string) => {
-    const updatedEmployee = handleEmployeeSelection(selectedName, employees, emp);
+    const updatedEmployee = handleEmployeeSelection(
+      selectedName,
+      employees,
+      emp,
+    );
     onChange(updatedEmployee);
   };
 

@@ -35,7 +35,12 @@ export default function ShiftTable({
   };
 
   const handleTimeConfirm = (startTime: string, endTime: string) => {
-    const updatedEmployees = handleTimeSelection(employees, editingEmpId!, startTime, endTime);
+    const updatedEmployees = handleTimeSelection(
+      employees,
+      editingEmpId!,
+      startTime,
+      endTime,
+    );
     onChange(updatedEmployees);
     setShowTimePicker(false);
     setEditingEmpId(null);
