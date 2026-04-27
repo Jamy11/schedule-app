@@ -24,3 +24,18 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  body {
+    background: white;
+  }
+
+  button,
+  input[type="date"] {
+    display: none;
+  }
+
+  .shadow-sm {
+    box-shadow: none;
+  }
+}
