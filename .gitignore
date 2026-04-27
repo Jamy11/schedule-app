@@ -11,6 +11,9 @@
 !.yarn/versions
 /public/design/
 
+# employee data
+employees.json
+
 # testing
 /coverage
 
