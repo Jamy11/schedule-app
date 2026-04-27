@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Employee } from "@/types/schedule";
 import EmployeeRow from "./EmployeeRow";
 import TimePicker from "./TimePicker";
+import { handleTimeSelection } from "@/utils/scheduleUtils";
 
 interface ShiftTableProps {
   title: string;
   employees: Employee[];
+  employeeData: any[];
   onChange: (emps: Employee[]) => void;
   onAddRow: () => void;
   onDeleteRow: (id: number) => void;
@@ -16,6 +18,7 @@ interface ShiftTableProps {
 export default function ShiftTable({
   title,
   employees,
+  employeeData,
   onChange,
   onAddRow,
   onDeleteRow,
@@ -32,12 +35,8 @@ export default function ShiftTable({
   };
 
   const handleTimeConfirm = (startTime: string, endTime: string) => {
-    if (editingEmpId !== null) {
-      const emp = employees.find((e) => e.id === editingEmpId);
-      if (emp) {
-        update({ ...emp, shift: `${startTime} – ${endTime}` });
-      }
-    }
+    const updatedEmployees = handleTimeSelection(employees, editingEmpId!, startTime, endTime);
+    onChange(updatedEmployees);
     setShowTimePicker(false);
     setEditingEmpId(null);
   };
@@ -64,7 +63,7 @@ export default function ShiftTable({
                 Name
               </th>
               <th className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wide px-2 py-1.5 border-r border-gray-200 w-[13%]">
-                Group
+                Role
               </th>
               <th className="text-center text-[10px] font-medium text-gray-400 uppercase tracking-wide px-2 py-1.5 border-r border-gray-200 w-[22%]">
                 Shift
@@ -85,6 +84,7 @@ export default function ShiftTable({
               <EmployeeRow
                 key={emp.id}
                 emp={emp}
+                employees={employeeData}
                 onChange={update}
                 onDelete={onDeleteRow}
                 onShiftClick={handleShiftClick}

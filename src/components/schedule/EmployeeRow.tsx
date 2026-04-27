@@ -1,9 +1,12 @@
 "use client";
 
-import { Employee, GROUPS } from "@/types/schedule";
+import { useState, useEffect } from "react";
+import { Employee, ROLES, EmployeeData } from "@/types/schedule";
+import { handleEmployeeSelection } from "@/utils/scheduleUtils";
 
 interface EmployeeRowProps {
   emp: Employee;
+  employees: EmployeeData[];
   onChange: (updated: Employee) => void;
   onDelete: (id: number) => void;
   onShiftClick: (empId: number) => void;
@@ -11,12 +14,18 @@ interface EmployeeRowProps {
 
 export default function EmployeeRow({
   emp,
+  employees,
   onChange,
   onDelete,
   onShiftClick,
 }: EmployeeRowProps) {
   const set = (field: keyof Employee, value: string) =>
     onChange({ ...emp, [field]: value });
+
+  const handleNameChange = (selectedName: string) => {
+    const updatedEmployee = handleEmployeeSelection(selectedName, employees, emp);
+    onChange(updatedEmployee);
+  };
 
   const inputCls =
     "w-full h-full bg-transparent text-sm text-gray-800 px-2 outline-none focus:bg-blue-50 placeholder:text-gray-300";
@@ -26,23 +35,29 @@ export default function EmployeeRow({
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
       <td className="border-r border-gray-200 h-8">
-        <input
-          className={inputCls}
-          placeholder="Employee name"
+        <select
+          className="w-full h-full bg-transparent text-sm text-gray-800 px-2 outline-none focus:bg-blue-50 cursor-pointer"
           value={emp.name}
-          onChange={(e) => set("name", e.target.value)}
-        />
+          onChange={(e) => handleNameChange(e.target.value)}
+        >
+          <option value="">Select employee</option>
+          {employees.map((employee) => (
+            <option key={employee.name} value={employee.name}>
+              {employee.name}
+            </option>
+          ))}
+        </select>
       </td>
       <td className="border-r border-gray-200 h-8">
         <select
           className="w-full h-full bg-transparent text-xs text-gray-500 px-1 outline-none focus:bg-blue-50 cursor-pointer"
-          value={emp.group}
-          onChange={(e) => set("group", e.target.value)}
+          value={emp.role}
+          onChange={(e) => set("role", e.target.value)}
         >
           <option value="">—</option>
-          {GROUPS.map((g) => (
-            <option key={g} value={g}>
-              {g}
+          {ROLES.map((r) => (
+            <option key={r} value={r}>
+              {r}
             </option>
           ))}
         </select>

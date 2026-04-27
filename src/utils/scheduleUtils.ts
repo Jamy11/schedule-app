@@ -1,4 +1,4 @@
-import { Employee, ShiftType } from "@/types/schedule";
+import { Employee, ShiftType, EmployeeData } from "@/types/schedule";
 
 /**
  * Parse a shift string like "8:00am – 4:00pm" into start/end minutes from midnight
@@ -101,7 +101,7 @@ export function applyAutoBreaks(employees: Employee[]): Employee[] {
  * Create a blank employee object
  */
 export function createEmployee(id: number): Employee {
-  return { id, name: "", group: "", shift: "", b1: "", b2: "", b3: "" };
+  return { id, name: "", role: "", shift: "", b1: "", b2: "", b3: "" };
 }
 
 /**
@@ -129,23 +129,69 @@ export function breaksOverlap(a: Employee, b: Employee): boolean {
 }
 
 /**
- * Get conflict warnings — employees from the same group with overlapping breaks
+ * Get conflict warnings — employees from the same role with overlapping breaks
  */
 export function getBreakConflicts(employees: Employee[]): string[] {
   const warnings: string[] = [];
-  const filled = employees.filter((e) => e.name && e.group && e.shift);
+  const filled = employees.filter((e) => e.name && e.role && e.shift);
 
   for (let i = 0; i < filled.length; i++) {
     for (let j = i + 1; j < filled.length; j++) {
       const a = filled[i];
       const b = filled[j];
-      if (a.group && a.group === b.group && breaksOverlap(a, b)) {
+      if (a.role && a.role === b.role && breaksOverlap(a, b)) {
         warnings.push(
-          `${a.name} and ${b.name} are both in ${a.group} and have overlapping breaks.`
+          `${a.name} and ${b.name} are both in ${a.role} and have overlapping breaks.`
         );
       }
     }
   }
 
   return warnings;
+}
+
+/**
+ * Handle employee selection from dropdown - auto-fills role
+ */
+export function handleEmployeeSelection(
+  selectedName: string,
+  employees: EmployeeData[],
+  currentEmployee: Employee
+): Employee {
+  const employeeData = employees.find((e) => e.name === selectedName);
+  if (employeeData) {
+    return { ...currentEmployee, name: selectedName, role: employeeData.role };
+  }
+  return { ...currentEmployee, name: selectedName };
+}
+
+/**
+ * Add a new employee row to the list
+ */
+export function handleAddRow(employees: Employee[]): Employee[] {
+  const maxId = employees.length > 0 ? Math.max(...employees.map((e) => e.id)) : 0;
+  return [...employees, createEmployee(maxId + 1)];
+}
+
+/**
+ * Delete an employee row from the list
+ */
+export function handleDeleteRow(employees: Employee[], idToDelete: number): Employee[] {
+  return employees.filter((e) => e.id !== idToDelete);
+}
+
+/**
+ * Handle time selection from time picker
+ */
+export function handleTimeSelection(
+  employees: Employee[],
+  employeeId: number,
+  startTime: string,
+  endTime: string
+): Employee[] {
+  return employees.map((emp) =>
+    emp.id === employeeId
+      ? { ...emp, shift: `${startTime} – ${endTime}` }
+      : emp
+  );
 }

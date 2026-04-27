@@ -22,6 +22,28 @@ export default function TimePicker({
   const [endMin, setEndMin] = useState("00");
   const [endPeriod, setEndPeriod] = useState("pm");
 
+  // Auto-calculate end time when start time changes
+  useEffect(() => {
+    if (startHour && startMin && startPeriod) {
+      const startHour24 = startPeriod === "pm" && startHour !== "12" 
+        ? parseInt(startHour) + 12 
+        : startPeriod === "am" && startHour === "12" 
+        ? 0 
+        : parseInt(startHour);
+      
+      const startMinutes = startHour24 * 60 + parseInt(startMin);
+      const endMinutes = startMinutes + 8 * 60; // Add 8 hours
+      
+      const endHour24 = Math.floor(endMinutes / 60);
+      const endHour12 = endHour24 > 12 ? endHour24 - 12 : endHour24 === 0 ? 12 : endHour24;
+      const endPeriod = endHour24 >= 12 ? "pm" : "am";
+      
+      setEndHour(String(endHour12));
+      setEndMin(String(endMinutes % 60).padStart(2, "0"));
+      setEndPeriod(endPeriod);
+    }
+  }, [startHour, startMin, startPeriod]);
+
   // Parse initial value if provided
   useEffect(() => {
     if (initialValue && isOpen) {
@@ -54,7 +76,7 @@ export default function TimePicker({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-96">
-        <h2 className="text-lg font-bold mb-4 text-gray-800">Select Shift Time</h2>
+        <h2 className="text-lg font-bold mb-4 text-gray-900">Select Shift Time</h2>
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           {/* Start Time */}
@@ -66,22 +88,22 @@ export default function TimePicker({
               <select
                 value={startHour}
                 onChange={(e) => setStartHour(e.target.value)}
-                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm"
+                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
                 {hours.map((h) => (
-                  <option key={h} value={h}>
+                  <option key={h} value={h} className="text-gray-900">
                     {h}
                   </option>
                 ))}
               </select>
-              <span className="self-center">:</span>
+              <span className="self-center text-gray-700">:</span>
               <select
                 value={startMin}
                 onChange={(e) => setStartMin(e.target.value)}
-                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm"
+                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
                 {minutes.map((m) => (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} className="text-gray-900">
                     {m}
                   </option>
                 ))}
@@ -89,10 +111,10 @@ export default function TimePicker({
               <select
                 value={startPeriod}
                 onChange={(e) => setStartPeriod(e.target.value)}
-                className="px-2 py-2 border border-gray-300 rounded text-sm"
+                className="px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
-                <option value="am">AM</option>
-                <option value="pm">PM</option>
+                <option value="am" className="text-gray-900">AM</option>
+                <option value="pm" className="text-gray-900">PM</option>
               </select>
             </div>
           </div>
@@ -100,28 +122,28 @@ export default function TimePicker({
           {/* End Time */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Time
+              End Time (Auto-calculated)
             </label>
             <div className="flex gap-2">
               <select
                 value={endHour}
                 onChange={(e) => setEndHour(e.target.value)}
-                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm"
+                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
                 {hours.map((h) => (
-                  <option key={h} value={h}>
+                  <option key={h} value={h} className="text-gray-900">
                     {h}
                   </option>
                 ))}
               </select>
-              <span className="self-center">:</span>
+              <span className="self-center text-gray-700">:</span>
               <select
                 value={endMin}
                 onChange={(e) => setEndMin(e.target.value)}
-                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm"
+                className="flex-1 px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
                 {minutes.map((m) => (
-                  <option key={m} value={m}>
+                  <option key={m} value={m} className="text-gray-900">
                     {m}
                   </option>
                 ))}
@@ -129,10 +151,10 @@ export default function TimePicker({
               <select
                 value={endPeriod}
                 onChange={(e) => setEndPeriod(e.target.value)}
-                className="px-2 py-2 border border-gray-300 rounded text-sm"
+                className="px-2 py-2 border border-gray-300 rounded text-sm text-gray-900 bg-white"
               >
-                <option value="am">AM</option>
-                <option value="pm">PM</option>
+                <option value="am" className="text-gray-900">AM</option>
+                <option value="pm" className="text-gray-900">PM</option>
               </select>
             </div>
           </div>
