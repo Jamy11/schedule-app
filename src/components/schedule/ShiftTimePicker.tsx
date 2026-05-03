@@ -63,7 +63,7 @@ export default function ShiftTimePicker({
     }
   }, [isOpen, initialValue]);
 
-  const handleConfirm = () => {
+  const confirmSelection = () => {
     const startTime = `${startHour}:${startMin}${startPeriod}`;
     const endTime = `${endHour}:${endMin}${endPeriod}`;
     onConfirm(startTime, endTime);
@@ -72,8 +72,8 @@ export default function ShiftTimePicker({
 
   if (!isOpen) return null;
 
-  const hours = Array.from({ length: 12 }, (_, i) => String(i + 1));
-  const minutes = ["00", "15", "30", "45"];
+  const hourOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
+  const minuteOptions = ["00", "15", "30", "45"];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -94,7 +94,7 @@ export default function ShiftTimePicker({
                 onChange={(e) => setStartHour(e.target.value)}
                 className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-base text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {hours.map((h) => (
+                {hourOptions.map((h) => (
                   <option key={h} value={h} className="text-gray-900">
                     {h}
                   </option>
@@ -106,7 +106,7 @@ export default function ShiftTimePicker({
                 onChange={(e) => setStartMin(e.target.value)}
                 className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-base text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {minutes.map((m) => (
+                {minuteOptions.map((m) => (
                   <option key={m} value={m} className="text-gray-900">
                     {m}
                   </option>
@@ -138,7 +138,7 @@ export default function ShiftTimePicker({
                 onChange={(e) => setEndHour(e.target.value)}
                 className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-base text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {hours.map((h) => (
+                {hourOptions.map((h) => (
                   <option key={h} value={h} className="text-gray-900">
                     {h}
                   </option>
@@ -150,7 +150,7 @@ export default function ShiftTimePicker({
                 onChange={(e) => setEndMin(e.target.value)}
                 className="flex-1 px-3 py-3 border border-gray-300 rounded-md text-base text-gray-900 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                {minutes.map((m) => (
+                {minuteOptions.map((m) => (
                   <option key={m} value={m} className="text-gray-900">
                     {m}
                   </option>
@@ -180,7 +180,7 @@ export default function ShiftTimePicker({
             Cancel
           </button>
           <button
-            onClick={handleConfirm}
+            onClick={confirmSelection}
             className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             Confirm
