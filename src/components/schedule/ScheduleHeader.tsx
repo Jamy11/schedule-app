@@ -1,18 +1,18 @@
 "use client";
 
-interface PageHeaderProps {
+interface ScheduleHeaderProps {
   date: string;
   onDateChange: (date: string) => void;
   onAutoBreaks: () => void;
   onPrint: () => void;
 }
 
-export default function PageHeader({
+export default function ScheduleHeader({
   date,
   onDateChange,
   onAutoBreaks,
   onPrint,
-}: PageHeaderProps) {
+}: ScheduleHeaderProps) {
   return (
     <div className="w-full max-w-3xl flex items-center justify-between mb-4">
       <h1 className="text-base font-medium text-gray-700">Daily Schedule</h1>

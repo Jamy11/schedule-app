@@ -2,12 +2,15 @@
 
 import { MgmtFields } from "@/types/schedule";
 
-interface MgmtSectionProps {
+interface ManagementSectionProps {
   mgmt: MgmtFields;
   onChange: (field: keyof MgmtFields, value: string) => void;
 }
 
-export default function MgmtSection({ mgmt, onChange }: MgmtSectionProps) {
+export default function ManagementSection({
+  mgmt,
+  onChange,
+}: ManagementSectionProps) {
   const inputCls =
     "flex-1 border-none bg-transparent text-sm text-gray-800 px-2 py-1 outline-none focus:bg-blue-50 h-8 placeholder:text-gray-300";
   const labelCls = "text-[10px] text-gray-400 px-2 min-w-[48px]";

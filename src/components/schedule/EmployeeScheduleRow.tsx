@@ -4,31 +4,31 @@ import { useState, useEffect } from "react";
 import { Employee, ROLES, EmployeeData } from "@/types/schedule";
 import { handleEmployeeSelection } from "@/utils/scheduleUtils";
 
-interface EmployeeRowProps {
-  emp: Employee;
-  employees: EmployeeData[];
-  onChange: (updated: Employee) => void;
-  onDelete: (id: number) => void;
-  onShiftClick: (empId: number) => void;
+interface EmployeeScheduleRowProps {
+  employee: Employee;
+  employeeDirectory: EmployeeData[];
+  onEmployeeChange: (updated: Employee) => void;
+  onRemoveEmployee: (id: number) => void;
+  onOpenShiftPicker: (employeeId: number) => void;
 }
 
-export default function EmployeeRow({
-  emp,
-  employees,
-  onChange,
-  onDelete,
-  onShiftClick,
-}: EmployeeRowProps) {
-  const set = (field: keyof Employee, value: string) =>
-    onChange({ ...emp, [field]: value });
+export default function EmployeeScheduleRow({
+  employee,
+  employeeDirectory,
+  onEmployeeChange,
+  onRemoveEmployee,
+  onOpenShiftPicker,
+}: EmployeeScheduleRowProps) {
+  const setField = (field: keyof Employee, value: string) =>
+    onEmployeeChange({ ...employee, [field]: value });
 
   const handleNameChange = (selectedName: string) => {
     const updatedEmployee = handleEmployeeSelection(
       selectedName,
-      employees,
-      emp,
+      employeeDirectory,
+      employee,
     );
-    onChange(updatedEmployee);
+    onEmployeeChange(updatedEmployee);
   };
 
   const inputCls =
@@ -41,13 +41,13 @@ export default function EmployeeRow({
       <td className="border-r border-gray-200 h-8">
         <select
           className="w-full h-full bg-transparent text-sm text-gray-800 px-2 outline-none focus:bg-blue-50 cursor-pointer"
-          value={emp.name}
+          value={employee.name}
           onChange={(e) => handleNameChange(e.target.value)}
         >
           <option value="">Select employee</option>
-          {employees.map((employee) => (
-            <option key={employee.name} value={employee.name}>
-              {employee.name}
+          {employeeDirectory.map((directoryEmployee) => (
+            <option key={directoryEmployee.name} value={directoryEmployee.name}>
+              {directoryEmployee.name}
             </option>
           ))}
         </select>
@@ -55,8 +55,8 @@ export default function EmployeeRow({
       <td className="border-r border-gray-200 h-8">
         <select
           className="w-full h-full bg-transparent text-xs text-gray-500 px-1 outline-none focus:bg-blue-50 cursor-pointer"
-          value={emp.role}
-          onChange={(e) => set("role", e.target.value)}
+          value={employee.role}
+          onChange={(e) => setField("role", e.target.value)}
         >
           <option value="">—</option>
           {ROLES.map((r) => (
@@ -68,37 +68,37 @@ export default function EmployeeRow({
       </td>
       <td className="border-r border-gray-200 h-8">
         <button
-          onClick={() => onShiftClick(emp.id)}
+          onClick={() => onOpenShiftPicker(employee.id)}
           className="w-full h-full text-sm text-blue-600 hover:bg-blue-50 px-2 outline-none transition text-left"
         >
-          {emp.shift || "Click to set shift"}
+          {employee.shift || "Click to set shift"}
         </button>
       </td>
       <td className="border-r border-gray-200 h-8">
         <input
           className={breakCls}
           placeholder="—"
-          value={emp.b1}
-          onChange={(e) => set("b1", e.target.value)}
+          value={employee.b1}
+          onChange={(e) => setField("b1", e.target.value)}
         />
       </td>
       <td className="border-r border-gray-200 h-8">
         <input
           className={breakCls}
           placeholder="—"
-          value={emp.b2}
-          onChange={(e) => set("b2", e.target.value)}
+          value={employee.b2}
+          onChange={(e) => setField("b2", e.target.value)}
         />
       </td>
       <td className="h-8 flex items-center">
         <input
           className={breakCls}
           placeholder="—"
-          value={emp.b3}
-          onChange={(e) => set("b3", e.target.value)}
+          value={employee.b3}
+          onChange={(e) => setField("b3", e.target.value)}
         />
         <button
-          onClick={() => onDelete(emp.id)}
+          onClick={() => onRemoveEmployee(employee.id)}
           className="ml-2 px-2 py-1 text-red-600 hover:bg-red-50 rounded transition text-sm font-bold"
           title="Delete row"
         >

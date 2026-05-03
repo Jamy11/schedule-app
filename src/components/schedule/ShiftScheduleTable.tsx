@@ -1,33 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { Employee } from "@/types/schedule";
-import EmployeeRow from "./EmployeeRow";
-import TimePicker from "./TimePicker";
+import { Employee, EmployeeData } from "@/types/schedule";
+import EmployeeScheduleRow from "./EmployeeScheduleRow";
+import ShiftTimePicker from "./ShiftTimePicker";
 import { handleTimeSelection } from "@/utils/scheduleUtils";
 
-interface ShiftTableProps {
+interface ShiftScheduleTableProps {
   title: string;
   employees: Employee[];
-  employeeData: any[];
-  onChange: (emps: Employee[]) => void;
-  onAddRow: () => void;
-  onDeleteRow: (id: number) => void;
+  employeeDirectory: EmployeeData[];
+  onEmployeesChange: (emps: Employee[]) => void;
+  onAddEmployee: () => void;
+  onRemoveEmployee: (id: number) => void;
 }
 
-export default function ShiftTable({
+export default function ShiftScheduleTable({
   title,
   employees,
-  employeeData,
-  onChange,
-  onAddRow,
-  onDeleteRow,
-}: ShiftTableProps) {
+  employeeDirectory,
+  onEmployeesChange,
+  onAddEmployee,
+  onRemoveEmployee,
+}: ShiftScheduleTableProps) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingEmpId, setEditingEmpId] = useState<number | null>(null);
 
-  const update = (updated: Employee) =>
-    onChange(employees.map((e) => (e.id === updated.id ? updated : e)));
+  const handleEmployeeUpdate = (updated: Employee) =>
+    onEmployeesChange(
+      employees.map((e) => (e.id === updated.id ? updated : e)),
+    );
 
   const handleShiftClick = (empId: number) => {
     setEditingEmpId(empId);
@@ -41,7 +43,7 @@ export default function ShiftTable({
       startTime,
       endTime,
     );
-    onChange(updatedEmployees);
+    onEmployeesChange(updatedEmployees);
     setShowTimePicker(false);
     setEditingEmpId(null);
   };
@@ -54,7 +56,7 @@ export default function ShiftTable({
         <div className="flex items-center justify-between bg-gray-800 text-gray-300 text-xs font-medium px-4 py-1.5 tracking-wide uppercase">
           <span>{title}</span>
           <button
-            onClick={onAddRow}
+            onClick={onAddEmployee}
             className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold transition"
             title="Add new employee"
           >
@@ -85,21 +87,21 @@ export default function ShiftTable({
             </tr>
           </thead>
           <tbody>
-            {employees.map((emp) => (
-              <EmployeeRow
-                key={emp.id}
-                emp={emp}
-                employees={employeeData}
-                onChange={update}
-                onDelete={onDeleteRow}
-                onShiftClick={handleShiftClick}
+            {employees.map((employee) => (
+              <EmployeeScheduleRow
+                key={employee.id}
+                employee={employee}
+                employeeDirectory={employeeDirectory}
+                onEmployeeChange={handleEmployeeUpdate}
+                onRemoveEmployee={onRemoveEmployee}
+                onOpenShiftPicker={handleShiftClick}
               />
             ))}
           </tbody>
         </table>
       </div>
 
-      <TimePicker
+      <ShiftTimePicker
         isOpen={showTimePicker}
         onClose={() => {
           setShowTimePicker(false);

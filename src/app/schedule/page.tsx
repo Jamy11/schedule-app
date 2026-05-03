@@ -9,10 +9,10 @@ import {
   handleAddRow,
   handleDeleteRow,
 } from "@/utils/scheduleUtils";
-import PageHeader from "@/components/schedule/PageHeader";
-import ShiftTable from "@/components/schedule/ShiftTable";
-import MgmtSection from "@/components/schedule/MgmtSection";
-import ConflictWarnings from "@/components/schedule/ConflictWarnings";
+import ScheduleHeader from "@/components/schedule/ScheduleHeader";
+import ShiftScheduleTable from "@/components/schedule/ShiftScheduleTable";
+import ManagementSection from "@/components/schedule/ManagementSection";
+import ScheduleConflictWarnings from "@/components/schedule/ScheduleConflictWarnings";
 
 export default function SchedulePage() {
   const today = new Date().toISOString().split("T")[0];
@@ -25,7 +25,9 @@ export default function SchedulePage() {
     Array.from({ length: 5 }, (_, i) => createEmployee(i + 100)),
   );
 
-  const [employeeData, setEmployeeData] = useState<EmployeeData[]>([]);
+  const [employeeDirectory, setEmployeeDirectory] = useState<EmployeeData[]>(
+    [],
+  );
 
   const [mgmt, setMgmt] = useState<MgmtFields>({
     lodShift: "",
@@ -37,9 +39,9 @@ export default function SchedulePage() {
   });
 
   useEffect(() => {
-    fetch("/employees.json")
+    fetch("/api/employees")
       .then((res) => res.json())
-      .then((data) => setEmployeeData(data))
+      .then((data) => setEmployeeDirectory(data))
       .catch((err) => console.error("Failed to load employees:", err));
   }, []);
 
@@ -75,37 +77,37 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
-      <PageHeader
+      <ScheduleHeader
         date={date}
         onDateChange={setDate}
         onAutoBreaks={handleAutoBreaks}
         onPrint={() => window.print()}
       />
 
-      <ConflictWarnings warnings={conflicts} />
+      <ScheduleConflictWarnings warnings={conflicts} />
 
       <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mt-3">
-        <ShiftTable
+        <ShiftScheduleTable
           title="Day Shift"
           employees={dayEmps}
-          employeeData={employeeData}
-          onChange={setDayEmps}
-          onAddRow={handleAddDayRow}
-          onDeleteRow={handleDeleteDayRow}
+          employeeDirectory={employeeDirectory}
+          onEmployeesChange={setDayEmps}
+          onAddEmployee={handleAddDayRow}
+          onRemoveEmployee={handleDeleteDayRow}
         />
 
         <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
 
-        <ShiftTable
+        <ShiftScheduleTable
           title="Evening Shift"
           employees={eveEmps}
-          employeeData={employeeData}
-          onChange={setEveEmps}
-          onAddRow={handleAddEveRow}
-          onDeleteRow={handleDeleteEveRow}
+          employeeDirectory={employeeDirectory}
+          onEmployeesChange={setEveEmps}
+          onAddEmployee={handleAddEveRow}
+          onRemoveEmployee={handleDeleteEveRow}
         />
 
-        <MgmtSection mgmt={mgmt} onChange={handleMgmtChange} />
+        <ManagementSection mgmt={mgmt} onChange={handleMgmtChange} />
       </div>
     </div>
   );

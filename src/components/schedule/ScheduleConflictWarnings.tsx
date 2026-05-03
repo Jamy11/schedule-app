@@ -1,10 +1,12 @@
 "use client";
 
-interface ConflictWarningsProps {
+interface ScheduleConflictWarningsProps {
   warnings: string[];
 }
 
-export default function ConflictWarnings({ warnings }: ConflictWarningsProps) {
+export default function ScheduleConflictWarnings({
+  warnings,
+}: ScheduleConflictWarningsProps) {
   if (warnings.length === 0) return null;
 
   return (

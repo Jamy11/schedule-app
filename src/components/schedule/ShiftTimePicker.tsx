@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from "react";
 
-interface TimePickerProps {
+interface ShiftTimePickerProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (startTime: string, endTime: string) => void;
   initialValue?: string;
 }
 
-export default function TimePicker({
+export default function ShiftTimePicker({
   isOpen,
   onClose,
   onConfirm,
   initialValue,
-}: TimePickerProps) {
+}: ShiftTimePickerProps) {
   const [startHour, setStartHour] = useState("8");
   const [startMin, setStartMin] = useState("00");
   const [startPeriod, setStartPeriod] = useState("am");
