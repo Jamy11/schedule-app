@@ -120,6 +120,11 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
+      {/* Hidden element for printing - shows only store number */}
+      <div className="print-store-info hidden">
+        Store {store}
+      </div>
+
       <ScheduleHeader
         date={date}
         onDateChange={setDate}

@@ -38,4 +38,21 @@ body {
   .shadow-sm {
     box-shadow: none;
   }
+
+  /* Hide everything except the print store info when printing */
+  body > div > * {
+    display: none;
+  }
+
+  /* Show only the print store info */
+  .print-store-info {
+    display: block !important;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    font-weight: bold;
+    text-align: center;
+  }
 }
