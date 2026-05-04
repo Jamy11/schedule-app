@@ -139,28 +139,36 @@ export default function SchedulePage() {
         <ScheduleConflictWarnings warnings={conflicts} />
       </div>
 
-      <div className="schedule-content w-full max-w-3xl bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mt-3">
-        <ShiftScheduleTable
-          title="Day Shift"
-          employees={dayEmps}
-          employeeDirectory={employeeDirectory}
-          onEmployeesChange={setDayEmps}
-          onAddEmployee={handleAddDayRow}
-          onRemoveEmployee={handleDeleteDayRow}
-        />
+      <div className="schedule-content w-full max-w-5xl mt-3">
+        {/* Top row: Day Shift (left) and Management (right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <ShiftScheduleTable
+              title="Day Shift"
+              employees={dayEmps}
+              employeeDirectory={employeeDirectory}
+              onEmployeesChange={setDayEmps}
+              onAddEmployee={handleAddDayRow}
+              onRemoveEmployee={handleDeleteDayRow}
+            />
+          </div>
 
-        <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <ManagementSection mgmt={mgmt} onChange={handleMgmtChange} />
+          </div>
+        </div>
 
-        <ShiftScheduleTable
-          title="Evening Shift"
-          employees={eveEmps}
-          employeeDirectory={employeeDirectory}
-          onEmployeesChange={setEveEmps}
-          onAddEmployee={handleAddEveRow}
-          onRemoveEmployee={handleDeleteEveRow}
-        />
-
-        <ManagementSection mgmt={mgmt} onChange={handleMgmtChange} />
+        {/* Bottom row: Evening Shift (full width) */}
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+          <ShiftScheduleTable
+            title="Evening Shift"
+            employees={eveEmps}
+            employeeDirectory={employeeDirectory}
+            onEmployeesChange={setEveEmps}
+            onAddEmployee={handleAddEveRow}
+            onRemoveEmployee={handleDeleteEveRow}
+          />
+        </div>
       </div>
 
       <button
