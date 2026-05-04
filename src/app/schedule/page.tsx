@@ -120,9 +120,9 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
-      {/* Hidden element for printing - shows only store number */}
+      {/* Print-only store info */}
       <div className="print-store-info hidden">
-        Store {store}
+        Store: {store}
       </div>
 
       <ScheduleHeader
@@ -133,7 +133,7 @@ export default function SchedulePage() {
       />
 
       <div className="w-full max-w-3xl mt-4 flex flex-col gap-3">
-        <div className="rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm">
+        <div className="store-selector-container rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm">
           <label className="block text-sm font-medium text-gray-900 mb-2" htmlFor="store-select">
             Store
           </label>
@@ -157,7 +157,7 @@ export default function SchedulePage() {
         <ScheduleConflictWarnings warnings={conflicts} />
       </div>
 
-      <div className="w-full max-w-3xl bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mt-3">
+      <div className="schedule-content w-full max-w-3xl bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mt-3">
         <ShiftScheduleTable
           title="Day Shift"
           employees={dayEmps}

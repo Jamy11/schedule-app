@@ -30,29 +30,38 @@ body {
     background: white;
   }
 
+  /* Hide interactive elements */
   button,
-  input[type="date"] {
-    display: none;
+  input[type="date"],
+  select {
+    display: none !important;
+  }
+
+  /* Hide the store selector dropdown and label, but show store info as text */
+  .store-selector-container {
+    display: none !important;
+  }
+
+  /* Show store info as text instead of dropdown */
+  .print-store-info {
+    display: block !important;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: left;
   }
 
   .shadow-sm {
     box-shadow: none;
   }
 
-  /* Hide everything except the print store info when printing */
-  body > div > * {
-    display: none;
+  /* Ensure schedule content is visible */
+  .schedule-content {
+    display: block !important;
   }
 
-  /* Show only the print store info */
-  .print-store-info {
-    display: block !important;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 48px;
-    font-weight: bold;
-    text-align: center;
+  /* Hide the reset button */
+  button[class*="bg-red-600"] {
+    display: none !important;
   }
 }
