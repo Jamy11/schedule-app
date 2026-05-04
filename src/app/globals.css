@@ -40,4 +40,18 @@ body {
     -moz-appearance: none !important;
     appearance: none !important;
   }
+
+  /* Hide the store selector component when printing */
+  .store-selector-container {
+    display: none !important;
+  }
+
+  /* Show store info as text instead of dropdown when printing */
+  .print-store-info {
+    display: block !important;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: left;
+  }
 }

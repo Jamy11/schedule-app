@@ -14,6 +14,7 @@ import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ShiftScheduleTable from "@/components/schedule/ShiftScheduleTable";
 import ManagementSection from "@/components/schedule/ManagementSection";
 import ScheduleConflictWarnings from "@/components/schedule/ScheduleConflictWarnings";
+import StoreSelector from "@/components/schedule/StoreSelector";
 
 const STORE_OPTIONS = ["101", "464", "65"];
 const DEFAULT_STORE = "101";
@@ -120,6 +121,11 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
+      {/* Print-only store info */}
+      <div className="print-store-info hidden">
+        Store: {store}
+      </div>
+
       <ScheduleHeader
         date={date}
         onDateChange={setDate}
@@ -128,27 +134,8 @@ export default function SchedulePage() {
       />
 
       <div className="w-full max-w-3xl mt-4 flex flex-col gap-3">
-        <div className="store-selector-container rounded-xl border border-gray-200 bg-white px-4 py-4 shadow-sm">
-          <label className="block text-sm font-medium text-gray-900 mb-2" htmlFor="store-select">
-            Store
-          </label>
-          <select
-            id="store-select"
-            value={store}
-            onChange={(e) => {
-              const nextStore = e.target.value;
-              setStore(nextStore);
-              router.push(`/schedule?store=${nextStore}`);
-            }}
-            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-          >
-            {STORE_OPTIONS.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </div>
+        <StoreSelector store={store} onStoreChange={setStore} />
+
         <ScheduleConflictWarnings warnings={conflicts} />
       </div>
 
