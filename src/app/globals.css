@@ -30,10 +30,14 @@ body {
     background: white;
   }
 
-  /* Hide interactive elements */
+  /* Hide interactive elements but keep table content visible */
   button,
-  input[type="date"],
-  select {
+  input[type="date"] {
+    display: none !important;
+  }
+
+  /* Hide only the store selector dropdown, not table selects */
+  .store-selector-container select {
     display: none !important;
   }
 
@@ -63,5 +67,23 @@ body {
   /* Hide the reset button */
   button[class*="bg-red-600"] {
     display: none !important;
+  }
+
+  /* Keep table select elements visible for displaying values */
+  table select {
+    display: table-cell !important;
+    background: transparent !important;
+    border: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    cursor: default !important;
+  }
+
+  /* Keep table input elements visible */
+  table input {
+    display: table-cell !important;
+    background: transparent !important;
+    border: none !important;
   }
 }
