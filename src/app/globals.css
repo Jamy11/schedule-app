@@ -59,4 +59,10 @@ body {
   button[class*="bg-red-600"] {
     display: none !important;
   }
+
+  /* Hide header buttons (Auto breaks and Print) when printing */
+  button[class*="bg-gray-800"],
+  button[class*="border-gray-300"] {
+    display: none !important;
+  }
 }
