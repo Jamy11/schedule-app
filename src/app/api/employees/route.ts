@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import path from "path";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const databaseUrl = process.env.DATABASE_URL;
 
@@ -13,7 +13,9 @@ export async function GET() {
       );
     }
 
-    // For now, we support file:// URLs for local JSON files
+    const url = new URL(request.url);
+    const requestedStore = url.searchParams.get("store");
+
     if (databaseUrl.startsWith("file://")) {
       const filePath = databaseUrl.replace("file://", "");
       const absolutePath = path.isAbsolute(filePath)
@@ -23,19 +25,24 @@ export async function GET() {
       const fileContents = await readFile(absolutePath, "utf8");
       const data = JSON.parse(fileContents);
 
-      // Handle the new structure: { "storeNumber": [employees] }
-      // Extract employees from the first store (for backward compatibility)
-      const storeNumbers = Object.keys(data);
-      if (storeNumbers.length > 0) {
-        const employees = data[storeNumbers[0]];
-        return NextResponse.json(employees);
+      if (requestedStore && typeof data === "object" && data !== null) {
+        const storeData = (data as Record<string, unknown>)[requestedStore];
+        if (Array.isArray(storeData)) {
+          return NextResponse.json(storeData);
+        }
       }
 
-      // Fallback for old structure (array directly)
+      const storeNumbers = Object.keys(data);
+      if (storeNumbers.length > 0) {
+        const employees = (data as Record<string, unknown>)[storeNumbers[0]];
+        if (Array.isArray(employees)) {
+          return NextResponse.json(employees);
+        }
+      }
+
       return NextResponse.json(data);
     }
 
-    // Future: Add support for other database types (PostgreSQL, etc.)
     return NextResponse.json(
       { error: "Unsupported database URL format" },
       { status: 500 },
