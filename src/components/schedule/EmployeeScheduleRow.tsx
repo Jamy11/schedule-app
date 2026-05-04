@@ -69,7 +69,7 @@ export default function EmployeeScheduleRow({
       <td className="border-r border-gray-200 h-8">
         <button
           onClick={() => onOpenShiftPicker(employee.id)}
-          className="shift-display w-full h-full text-sm text-blue-600 hover:bg-blue-50 px-2 outline-none transition text-left"
+          className="w-full h-full text-sm text-blue-600 hover:bg-blue-50 px-2 outline-none transition text-left"
         >
           {employee.shift || "Click to set shift"}
         </button>
