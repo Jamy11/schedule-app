@@ -33,4 +33,11 @@ body {
   .shadow-sm {
     box-shadow: none;
   }
+
+  /* Hide dropdown arrows on select elements */
+  select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+  }
 }
