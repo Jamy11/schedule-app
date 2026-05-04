@@ -54,4 +54,9 @@ body {
     margin-bottom: 20px;
     text-align: left;
   }
+
+  /* Hide the reset button when printing */
+  button[class*="bg-red-600"] {
+    display: none !important;
+  }
 }
