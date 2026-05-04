@@ -30,8 +30,11 @@ body {
     background: white;
   }
 
-  /* Hide interactive elements but keep table content visible */
-  button,
+  /* Hide interactive buttons but keep shift display buttons */
+  button:not(.shift-display) {
+    display: none !important;
+  }
+
   input[type="date"] {
     display: none !important;
   }
@@ -71,19 +74,41 @@ body {
 
   /* Keep table select elements visible for displaying values */
   table select {
-    display: table-cell !important;
+    display: inline-block !important;
     background: transparent !important;
     border: none !important;
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
     appearance: none !important;
     cursor: default !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Keep table input elements visible */
   table input {
-    display: table-cell !important;
+    display: inline-block !important;
     background: transparent !important;
     border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    text-align: center !important;
+  }
+
+  /* Keep shift display buttons visible */
+  .shift-display {
+    display: inline-block !important;
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 8px !important;
+    margin: 0 !important;
+    text-align: left !important;
+    cursor: default !important;
   }
 }
