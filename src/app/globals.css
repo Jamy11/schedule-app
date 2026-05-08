@@ -41,8 +41,18 @@ body {
     appearance: none !important;
   }
 
-  /* Hide the store selector component when printing */
+  /* Hide everything that's UI-only */
+  .no-print {
+    display: none !important;
+  }
+
+  /* Hide the store selector when printing */
   .store-selector-container {
+    display: none !important;
+  }
+
+  /* Hide conflict warnings when printing */
+  .conflict-warnings {
     display: none !important;
   }
 
@@ -53,16 +63,5 @@ body {
     font-weight: bold;
     margin-bottom: 20px;
     text-align: left;
-  }
-
-  /* Hide the reset button when printing */
-  button[class*="bg-red-600"] {
-    display: none !important;
-  }
-
-  /* Hide header buttons (Auto breaks and Print) when printing */
-  button[class*="bg-gray-800"],
-  button[class*="border-gray-300"] {
-    display: none !important;
   }
 }

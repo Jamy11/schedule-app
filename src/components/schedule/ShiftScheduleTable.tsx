@@ -57,7 +57,7 @@ export default function ShiftScheduleTable({
           <span>{title}</span>
           <button
             onClick={onAddEmployee}
-            className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold transition"
+            className="no-print bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-bold transition"
             title="Add new employee"
           >
             +

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Employee, ROLES, EmployeeData } from "@/types/schedule";
 import { handleEmployeeSelection } from "@/utils/scheduleUtils";
 
@@ -64,6 +63,10 @@ export default function EmployeeScheduleRow({
               {r}
             </option>
           ))}
+          {/* Show the employee's actual role even if it's not in the ROLES list */}
+          {employee.role && !(ROLES as readonly string[]).includes(employee.role) && (
+            <option value={employee.role}>{employee.role}</option>
+          )}
         </select>
       </td>
       <td className="border-r border-gray-200 h-8">
@@ -90,20 +93,22 @@ export default function EmployeeScheduleRow({
           onChange={(e) => setField("b2", e.target.value)}
         />
       </td>
-      <td className="h-8 flex items-center">
-        <input
-          className={breakCls}
-          placeholder="—"
-          value={employee.b3}
-          onChange={(e) => setField("b3", e.target.value)}
-        />
-        <button
-          onClick={() => onRemoveEmployee(employee.id)}
-          className="ml-2 px-2 py-1 text-red-600 hover:bg-red-50 rounded transition text-sm font-bold"
-          title="Delete row"
-        >
-          −
-        </button>
+      <td className="h-8">
+        <div className="flex items-center h-full">
+          <input
+            className={breakCls}
+            placeholder="—"
+            value={employee.b3}
+            onChange={(e) => setField("b3", e.target.value)}
+          />
+          <button
+            onClick={() => onRemoveEmployee(employee.id)}
+            className="no-print ml-2 px-2 py-1 text-red-600 hover:bg-red-50 rounded transition text-sm font-bold shrink-0"
+            title="Delete row"
+          >
+            −
+          </button>
+        </div>
       </td>
     </tr>
   );

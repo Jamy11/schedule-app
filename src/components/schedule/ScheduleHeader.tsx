@@ -25,13 +25,13 @@ export default function ScheduleHeader({
         />
         <button
           onClick={onAutoBreaks}
-          className="text-sm px-3 py-1.5 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 transition-colors"
+          className="no-print text-sm px-3 py-1.5 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 transition-colors"
         >
           Auto breaks
         </button>
         <button
           onClick={onPrint}
-          className="text-sm px-3 py-1.5 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          className="no-print text-sm px-3 py-1.5 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
         >
           Print
         </button>

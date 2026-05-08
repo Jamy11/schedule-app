@@ -1,13 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { STORE_OPTIONS } from "@/constants/schedule";
 
 interface StoreSelectorProps {
   store: string;
   onStoreChange: (store: string) => void;
 }
-
-const STORE_OPTIONS = ["101", "464", "65"];
 
 export default function StoreSelector({ store, onStoreChange }: StoreSelectorProps) {
   const router = useRouter();
