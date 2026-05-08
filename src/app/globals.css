@@ -26,12 +26,36 @@ body {
 }
 
 @media print {
+  @page {
+    size: letter;
+    margin: 0.3in;
+  }
+
+  /* Force backgrounds to print (table headers, dividers) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   body {
     background: white;
   }
 
-  .shadow-sm {
-    box-shadow: none;
+  /* Strip outer page chrome so schedule fills the paper */
+  .schedule-page {
+    min-height: unset !important;
+    background: white !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+  }
+
+  /* Schedule card fills full width, no rounded corners or shadow */
+  .schedule-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin-top: 4px !important;
   }
 
   /* Hide dropdown arrows on select elements */
@@ -41,27 +65,28 @@ body {
     appearance: none !important;
   }
 
-  /* Hide everything that's UI-only */
+  /* Hide all UI-only elements */
   .no-print {
     display: none !important;
   }
 
-  /* Hide the store selector when printing */
   .store-selector-container {
     display: none !important;
   }
 
-  /* Hide conflict warnings when printing */
   .conflict-warnings {
     display: none !important;
   }
 
-  /* Show store info as text instead of dropdown when printing */
+  /* Show store + date as compact print header */
   .print-store-info {
     display: block !important;
-    font-size: 18px;
+    font-size: 13px;
     font-weight: bold;
-    margin-bottom: 20px;
-    text-align: left;
+    margin-bottom: 4px;
+  }
+
+  .shadow-sm {
+    box-shadow: none;
   }
 }
