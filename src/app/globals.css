@@ -41,6 +41,23 @@ body {
     background: white;
   }
 
+  /* Tailwind 4 uses OKLCH which Chrome's print renderer drops — override with hex */
+  .bg-gray-800 {
+    background-color: #1f2937 !important;
+  }
+  .text-gray-300 {
+    color: #d1d5db !important;
+  }
+  .bg-gray-50 {
+    background-color: #f9fafb !important;
+  }
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+  }
+  .border-gray-200 {
+    border-color: #e5e7eb !important;
+  }
+
   /* Strip outer page chrome so schedule fills the paper */
   .schedule-page {
     min-height: unset !important;

@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef } from "react";
 
 // Letter paper at 0.3in margins each side:
 // usable height = (11 - 0.6) × 96 px/in = 998.4 px
-// Keep a 50 px reserve for the print-store-info header + rounding
-const USABLE_PX = (11 - 0.6) * 96 - 50;
+// Reserve 80 px for the print-store-info header + the fact that
+// print width (758 px) is narrower than screen max-width (768 px),
+// which can make rows slightly taller in the rendered print layout.
+const USABLE_PX = (11 - 0.6) * 96 - 80; // ≈ 918 px
 
 export function usePrintScale() {
   const styleRef = useRef<HTMLStyleElement | null>(null);

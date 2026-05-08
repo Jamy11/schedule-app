@@ -14,7 +14,7 @@ export default function ScheduleHeader({
   onPrint,
 }: ScheduleHeaderProps) {
   return (
-    <div className="w-full max-w-3xl flex items-center justify-between mb-4">
+    <div className="no-print w-full max-w-3xl flex items-center justify-between mb-4">
       <h1 className="text-base font-medium text-gray-700">Daily Schedule</h1>
       <div className="flex items-center gap-3">
         <input
