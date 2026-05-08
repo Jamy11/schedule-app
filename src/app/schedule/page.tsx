@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { DEFAULT_STORE } from "@/constants/schedule";
 import { useSchedule } from "@/hooks/useSchedule";
+import { usePrintScale } from "@/hooks/usePrintScale";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
 import ShiftScheduleTable from "@/components/schedule/ShiftScheduleTable";
 import InfoTable from "@/components/schedule/InfoTable";
@@ -14,6 +15,8 @@ import ResetButton from "@/components/schedule/ResetButton";
 function ScheduleContent() {
   const searchParams = useSearchParams();
   const selectedStore = searchParams.get("store") ?? DEFAULT_STORE;
+
+  const print = usePrintScale();
 
   const {
     store, date, dayEmps, eveEmps, conflicts, employeeDirectory,
@@ -34,7 +37,7 @@ function ScheduleContent() {
         date={date}
         onDateChange={setDate}
         onAutoBreaks={handlers.handleAutoBreaks}
-        onPrint={() => window.print()}
+        onPrint={print}
       />
 
       <div className="no-print w-full max-w-3xl mt-4 flex flex-col gap-3">

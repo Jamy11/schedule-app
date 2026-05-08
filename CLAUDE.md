@@ -44,6 +44,18 @@ Encoded in `src/utils/breakUtils.ts`:
 
 `applyAutoBreaks` staggers same-role employees by `BREAK_STAGGER_MINS` (15 min) so two people from the same group are never on break simultaneously. Constants live in `src/constants/schedule.ts`.
 
+### Management tables (Tables 3–7)
+
+`src/components/schedule/InfoTable.tsx` is a generic editable table that accepts any `columns: string[]` and `rows: InfoRow[]` (where `InfoRow = Record<string, string>`). It matches the exact styling of `ShiftScheduleTable` and has add/delete row functionality. The page renders five of these in a two-column grid below the shift tables:
+
+| Left column | Right column |
+|-------------|--------------|
+| LOD (Name, Shift, HRS) | MGMT (Name, Shift) |
+| Management Lunches (Name, Time) | Receiving (Name, Shift) |
+| | Bell (Name, Shift) |
+
+Default row counts and column definitions are set in `useSchedule.ts` (`makeInfoRows` helper). To change defaults, edit the counts passed to `makeInfoRows` in both `useState` initialisers and the `handleReset` body.
+
 ### Utilities split
 
 `src/utils/scheduleUtils.ts` is a re-export barrel — import from there or from the sub-modules directly:
@@ -53,7 +65,14 @@ Encoded in `src/utils/breakUtils.ts`:
 
 ### Print
 
-`window.print()` is called from `ScheduleHeader`. Elements hidden during print use the `.no-print` CSS class (defined in `src/app/globals.css`). The store info shown on print comes from `.print-store-info` (normally hidden, shown via print CSS).
+`window.print()` is called from `ScheduleHeader`. The goal is a single letter-page output. Key print CSS in `src/app/globals.css`:
+
+- `@page { size: letter; margin: 0.3in; }` — tight margins for maximum space
+- `print-color-adjust: exact` — forces dark table headers and gray dividers to render (browsers skip backgrounds by default)
+- `.schedule-page` — strips outer gray background and padding so the schedule fills edge-to-edge
+- `.schedule-content` — expands to full page width, removes border-radius and shadow
+- `.no-print` — hides any element (buttons, store selector, conflict warnings) from the printed output
+- `.print-store-info` — normally `hidden`, shown on print with store number and date
 
 ### Key gotchas
 
