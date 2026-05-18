@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ShiftTimePicker from "./ShiftTimePicker";
+import LunchTimePicker from "./LunchTimePicker";
 import { parseShift } from "@/utils/timeUtils";
 
 export type InfoRow = Record<string, string>;
@@ -17,6 +18,8 @@ interface InfoTableProps {
   shiftColumns?: string[];
   /** Maps a shift column name → the HRS column that should be auto-filled with the duration. */
   shiftHrsMap?: Record<string, string>;
+  /** Column names that should open the LunchTimePicker on click (10am–6pm, 30–60 min). */
+  lunchColumns?: string[];
 }
 
 function makeEmptyRow(columns: string[]): InfoRow {
@@ -31,8 +34,10 @@ export default function InfoTable({
   columnDropdowns = {},
   shiftColumns = [],
   shiftHrsMap = {},
+  lunchColumns = [],
 }: InfoTableProps) {
   const [pickerOpen, setPickerOpen] = useState<{ row: number; col: string } | null>(null);
+  const [lunchPickerOpen, setLunchPickerOpen] = useState<{ row: number; col: string } | null>(null);
 
   const addRow = () => onRowsChange([...rows, makeEmptyRow(columns)]);
 
@@ -52,6 +57,25 @@ export default function InfoTable({
 
   function renderCell(col: string, rowIndex: number) {
     const value = rows[rowIndex][col] ?? "";
+
+    // Lunch picker cell
+    if (lunchColumns.includes(col)) {
+      return (
+        <>
+          <button
+            onClick={() => setLunchPickerOpen({ row: rowIndex, col })}
+            className="no-print w-full h-full text-sm text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition-colors px-1"
+          >
+            {value || "Click to set time"}
+          </button>
+          {value && (
+            <span className="hidden print:inline text-sm text-gray-700 px-1">
+              {value}
+            </span>
+          )}
+        </>
+      );
+    }
 
     // Shift picker cell
     if (shiftColumns.includes(col)) {
@@ -165,6 +189,25 @@ export default function InfoTable({
           ))}
         </tbody>
       </table>
+
+      {/* Lunch time picker modal */}
+      {lunchPickerOpen && (
+        <LunchTimePicker
+          isOpen
+          initialValue={rows[lunchPickerOpen.row][lunchPickerOpen.col] ?? ""}
+          onClose={() => setLunchPickerOpen(null)}
+          onConfirm={(start, end) => {
+            onRowsChange(
+              rows.map((row, i) =>
+                i === lunchPickerOpen.row
+                  ? { ...row, [lunchPickerOpen.col]: `${start} – ${end}` }
+                  : row
+              )
+            );
+            setLunchPickerOpen(null);
+          }}
+        />
+      )}
 
       {/* Shift picker modal */}
       {pickerOpen && (

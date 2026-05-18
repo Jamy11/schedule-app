@@ -98,6 +98,7 @@ function ScheduleContent() {
               rows={mgmtLunchRows}
               onRowsChange={setMgmtLunchRows}
               columnDropdowns={{ Name: managerNames }}
+              lunchColumns={["Time"]}
             />
           </div>
 
