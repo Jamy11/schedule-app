@@ -7,6 +7,8 @@ interface InfoTableProps {
   columns: string[];
   rows: InfoRow[];
   onRowsChange: (rows: InfoRow[]) => void;
+  /** Optional map of column name → dropdown options. That column renders a <select> instead of <input>. */
+  columnDropdowns?: Record<string, string[]>;
 }
 
 function makeEmptyRow(columns: string[]): InfoRow {
@@ -18,6 +20,7 @@ export default function InfoTable({
   columns,
   rows,
   onRowsChange,
+  columnDropdowns = {},
 }: InfoTableProps) {
   const addRow = () =>
     onRowsChange([...rows, makeEmptyRow(columns)]);
@@ -30,8 +33,42 @@ export default function InfoTable({
       rows.map((row, i) => (i === rowIndex ? { ...row, [col]: value } : row))
     );
 
-  const cellCls =
+  const inputCls =
     "w-full h-full bg-transparent text-sm text-gray-700 text-center px-1 outline-none focus:bg-blue-50 placeholder:text-gray-300";
+
+  const selectCls =
+    "w-full h-full bg-transparent text-sm text-gray-700 text-center px-1 outline-none focus:bg-blue-50 cursor-pointer";
+
+  function renderCell(col: string, rowIndex: number, isLast: boolean) {
+    const options = columnDropdowns[col];
+    const value = rows[rowIndex][col] ?? "";
+
+    if (options) {
+      return (
+        <select
+          className={selectCls}
+          value={value}
+          onChange={(e) => updateCell(rowIndex, col, e.target.value)}
+        >
+          <option value="">—</option>
+          {options.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    return (
+      <input
+        className={inputCls}
+        placeholder="—"
+        value={value}
+        onChange={(e) => updateCell(rowIndex, col, e.target.value)}
+      />
+    );
+  }
 
   return (
     <div>
@@ -76,14 +113,7 @@ export default function InfoTable({
                   >
                     {isLast ? (
                       <div className="flex items-center h-full">
-                        <input
-                          className={cellCls}
-                          placeholder="—"
-                          value={row[col] ?? ""}
-                          onChange={(e) =>
-                            updateCell(rowIndex, col, e.target.value)
-                          }
-                        />
+                        {renderCell(col, rowIndex, true)}
                         <button
                           onClick={() => deleteRow(rowIndex)}
                           className="no-print ml-1 px-2 py-1 text-red-600 hover:bg-red-50 rounded transition text-sm font-bold shrink-0"
@@ -93,14 +123,7 @@ export default function InfoTable({
                         </button>
                       </div>
                     ) : (
-                      <input
-                        className={cellCls}
-                        placeholder="—"
-                        value={row[col] ?? ""}
-                        onChange={(e) =>
-                          updateCell(rowIndex, col, e.target.value)
-                        }
-                      />
+                      renderCell(col, rowIndex, false)
                     )}
                   </td>
                 );

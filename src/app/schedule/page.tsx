@@ -29,6 +29,11 @@ function ScheduleContent() {
     handlers,
   } = useSchedule(selectedStore);
 
+  // Managers & Supervisors for the LOD dropdown
+  const supervisorNames = employeeDirectory
+    .filter((e) => e.role === "Supervisor" || e.role === "Manager")
+    .map((e) => e.name);
+
   return (
     <div className="schedule-page min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
       <div className="print-store-info hidden">Store {store} — {date}</div>
@@ -81,6 +86,7 @@ function ScheduleContent() {
               columns={["LOD", "Shift", "HRS"]}
               rows={lodRows}
               onRowsChange={setLodRows}
+              columnDropdowns={{ LOD: supervisorNames }}
             />
 
             <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
