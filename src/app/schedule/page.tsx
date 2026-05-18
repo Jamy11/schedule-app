@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { DEFAULT_STORE } from "@/constants/schedule";
+import { getManagerNames } from "@/utils/employeeFilters";
 import { useSchedule } from "@/hooks/useSchedule";
 import { usePrintScale } from "@/hooks/usePrintScale";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
@@ -29,10 +30,8 @@ function ScheduleContent() {
     handlers,
   } = useSchedule(selectedStore);
 
-  // Managers & Supervisors for the LOD dropdown
-  const supervisorNames = employeeDirectory
-    .filter((e) => e.role === "Supervisor" || e.role === "Manager")
-    .map((e) => e.name);
+  // Names of Managers & Supervisors — used in LOD, Management Lunches, and (later) MGMT tables
+  const managerNames = getManagerNames(employeeDirectory);
 
   return (
     <div className="schedule-page min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -86,7 +85,7 @@ function ScheduleContent() {
               columns={["LOD", "Shift", "HRS"]}
               rows={lodRows}
               onRowsChange={setLodRows}
-              columnDropdowns={{ LOD: supervisorNames }}
+              columnDropdowns={{ LOD: managerNames }}
               shiftColumns={["Shift"]}
               shiftHrsMap={{ Shift: "HRS" }}
             />
@@ -98,6 +97,7 @@ function ScheduleContent() {
               columns={["Name", "Time"]}
               rows={mgmtLunchRows}
               onRowsChange={setMgmtLunchRows}
+              columnDropdowns={{ Name: managerNames }}
             />
           </div>
 
