@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import ShiftTimePicker from "./ShiftTimePicker";
+
 export type InfoRow = Record<string, string>;
 
 interface InfoTableProps {
@@ -7,8 +10,10 @@ interface InfoTableProps {
   columns: string[];
   rows: InfoRow[];
   onRowsChange: (rows: InfoRow[]) => void;
-  /** Optional map of column name → dropdown options. That column renders a <select> instead of <input>. */
+  /** Columns that render a name/value dropdown instead of a free-text input. */
   columnDropdowns?: Record<string, string[]>;
+  /** Column names that should open the ShiftTimePicker on click. */
+  shiftColumns?: string[];
 }
 
 function makeEmptyRow(columns: string[]): InfoRow {
@@ -21,9 +26,11 @@ export default function InfoTable({
   rows,
   onRowsChange,
   columnDropdowns = {},
+  shiftColumns = [],
 }: InfoTableProps) {
-  const addRow = () =>
-    onRowsChange([...rows, makeEmptyRow(columns)]);
+  const [pickerOpen, setPickerOpen] = useState<{ row: number; col: string } | null>(null);
+
+  const addRow = () => onRowsChange([...rows, makeEmptyRow(columns)]);
 
   const deleteRow = (index: number) =>
     onRowsChange(rows.filter((_, i) => i !== index));
@@ -39,10 +46,31 @@ export default function InfoTable({
   const selectCls =
     "w-full h-full bg-transparent text-sm text-gray-700 text-center px-1 outline-none focus:bg-blue-50 cursor-pointer";
 
-  function renderCell(col: string, rowIndex: number, isLast: boolean) {
-    const options = columnDropdowns[col];
+  function renderCell(col: string, rowIndex: number) {
     const value = rows[rowIndex][col] ?? "";
 
+    // Shift picker cell
+    if (shiftColumns.includes(col)) {
+      return (
+        <>
+          <button
+            onClick={() => setPickerOpen({ row: rowIndex, col })}
+            className="no-print w-full h-full text-sm text-blue-500 hover:text-blue-700 hover:bg-blue-50 transition-colors px-1"
+          >
+            {value || "Click to set shift"}
+          </button>
+          {/* Printed value (hidden on screen) */}
+          {value && (
+            <span className="hidden print:inline text-sm text-gray-700 px-1">
+              {value}
+            </span>
+          )}
+        </>
+      );
+    }
+
+    // Dropdown cell
+    const options = columnDropdowns[col];
     if (options) {
       return (
         <select
@@ -60,6 +88,7 @@ export default function InfoTable({
       );
     }
 
+    // Plain text input
     return (
       <input
         className={inputCls}
@@ -113,7 +142,7 @@ export default function InfoTable({
                   >
                     {isLast ? (
                       <div className="flex items-center h-full">
-                        {renderCell(col, rowIndex, true)}
+                        {renderCell(col, rowIndex)}
                         <button
                           onClick={() => deleteRow(rowIndex)}
                           className="no-print ml-1 px-2 py-1 text-red-600 hover:bg-red-50 rounded transition text-sm font-bold shrink-0"
@@ -123,7 +152,7 @@ export default function InfoTable({
                         </button>
                       </div>
                     ) : (
-                      renderCell(col, rowIndex, false)
+                      renderCell(col, rowIndex)
                     )}
                   </td>
                 );
@@ -132,6 +161,19 @@ export default function InfoTable({
           ))}
         </tbody>
       </table>
+
+      {/* Shift picker modal */}
+      {pickerOpen && (
+        <ShiftTimePicker
+          isOpen
+          initialValue={rows[pickerOpen.row][pickerOpen.col] ?? ""}
+          onClose={() => setPickerOpen(null)}
+          onConfirm={(start, end) => {
+            updateCell(pickerOpen.row, pickerOpen.col, `${start} – ${end}`);
+            setPickerOpen(null);
+          }}
+        />
+      )}
     </div>
   );
 }
