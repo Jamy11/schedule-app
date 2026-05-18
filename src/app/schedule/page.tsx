@@ -109,6 +109,8 @@ function ScheduleContent() {
               columns={["MGMT", "Shift"]}
               rows={mgmtRows}
               onRowsChange={setMgmtRows}
+              columnDropdowns={{ MGMT: managerNames }}
+              shiftColumns={["Shift"]}
             />
 
             <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
