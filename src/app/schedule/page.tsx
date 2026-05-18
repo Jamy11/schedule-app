@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { DEFAULT_STORE } from "@/constants/schedule";
-import { getManagerNames, getReceivingNames } from "@/utils/employeeFilters";
+import { getManagerNames, getReceivingNames, getWirelessNames } from "@/utils/employeeFilters";
 import { useSchedule } from "@/hooks/useSchedule";
 import { usePrintScale } from "@/hooks/usePrintScale";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
@@ -34,6 +34,8 @@ function ScheduleContent() {
   const managerNames = getManagerNames(employeeDirectory);
   // Names of Receiving employees — used in Receiving table
   const receivingNames = getReceivingNames(employeeDirectory);
+  // Names of Wireless employees — used in Bell table
+  const wirelessNames = getWirelessNames(employeeDirectory);
 
   return (
     <div className="schedule-page min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -133,6 +135,8 @@ function ScheduleContent() {
               columns={["Bell", "Shift"]}
               rows={bellRows}
               onRowsChange={setBellRows}
+              columnDropdowns={{ Bell: wirelessNames }}
+              shiftColumns={["Shift"]}
             />
           </div>
         </div>

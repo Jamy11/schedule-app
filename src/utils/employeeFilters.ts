@@ -21,3 +21,13 @@ export function getReceivingNames(directory: EmployeeData[]): string[] {
     .filter((e) => e.role === "Receiving")
     .map((e) => e.name);
 }
+
+/**
+ * Returns the names of employees whose role is 'Wireless'.
+ * Used to populate the Bell column dropdown in the Bell table.
+ */
+export function getWirelessNames(directory: EmployeeData[]): string[] {
+  return directory
+    .filter((e) => e.role === "Wireless")
+    .map((e) => e.name);
+}
