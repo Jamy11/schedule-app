@@ -88,6 +88,7 @@ function ScheduleContent() {
               onRowsChange={setLodRows}
               columnDropdowns={{ LOD: supervisorNames }}
               shiftColumns={["Shift"]}
+              shiftHrsMap={{ Shift: "HRS" }}
             />
 
             <div className="h-1.5 bg-gray-100 border-y border-gray-200" />

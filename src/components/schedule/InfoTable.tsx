@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ShiftTimePicker from "./ShiftTimePicker";
+import { parseShift } from "@/utils/timeUtils";
 
 export type InfoRow = Record<string, string>;
 
@@ -14,6 +15,8 @@ interface InfoTableProps {
   columnDropdowns?: Record<string, string[]>;
   /** Column names that should open the ShiftTimePicker on click. */
   shiftColumns?: string[];
+  /** Maps a shift column name → the HRS column that should be auto-filled with the duration. */
+  shiftHrsMap?: Record<string, string>;
 }
 
 function makeEmptyRow(columns: string[]): InfoRow {
@@ -27,6 +30,7 @@ export default function InfoTable({
   onRowsChange,
   columnDropdowns = {},
   shiftColumns = [],
+  shiftHrsMap = {},
 }: InfoTableProps) {
   const [pickerOpen, setPickerOpen] = useState<{ row: number; col: string } | null>(null);
 
@@ -169,7 +173,29 @@ export default function InfoTable({
           initialValue={rows[pickerOpen.row][pickerOpen.col] ?? ""}
           onClose={() => setPickerOpen(null)}
           onConfirm={(start, end) => {
-            updateCell(pickerOpen.row, pickerOpen.col, `${start} – ${end}`);
+            const shiftStr = `${start} – ${end}`;
+            const hrsCol = shiftHrsMap[pickerOpen.col];
+
+            // Calculate HRS value if a mapping exists
+            let hrsValue = "";
+            if (hrsCol) {
+              const parsed = parseShift(shiftStr);
+              if (parsed) {
+                const hrs = parsed.duration / 60;
+                hrsValue = hrs % 1 === 0 ? String(hrs) : hrs.toFixed(1);
+              }
+            }
+
+            // Single onRowsChange call so both columns update from the same base
+            onRowsChange(
+              rows.map((row, i) => {
+                if (i !== pickerOpen.row) return row;
+                const updated = { ...row, [pickerOpen.col]: shiftStr };
+                if (hrsCol && hrsValue) updated[hrsCol] = hrsValue;
+                return updated;
+              })
+            );
+
             setPickerOpen(null);
           }}
         />
