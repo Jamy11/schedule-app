@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { DEFAULT_STORE } from "@/constants/schedule";
-import { getManagerNames } from "@/utils/employeeFilters";
+import { getManagerNames, getReceivingNames } from "@/utils/employeeFilters";
 import { useSchedule } from "@/hooks/useSchedule";
 import { usePrintScale } from "@/hooks/usePrintScale";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
@@ -30,8 +30,10 @@ function ScheduleContent() {
     handlers,
   } = useSchedule(selectedStore);
 
-  // Names of Managers & Supervisors — used in LOD, Management Lunches, and (later) MGMT tables
+  // Names of Managers & Supervisors — used in LOD, Management Lunches, and MGMT tables
   const managerNames = getManagerNames(employeeDirectory);
+  // Names of Receiving employees — used in Receiving table
+  const receivingNames = getReceivingNames(employeeDirectory);
 
   return (
     <div className="schedule-page min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
@@ -120,6 +122,8 @@ function ScheduleContent() {
               columns={["Receiving", "Shift"]}
               rows={receivingRows}
               onRowsChange={setReceivingRows}
+              columnDropdowns={{ Receiving: receivingNames }}
+              shiftColumns={["Shift"]}
             />
 
             <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
