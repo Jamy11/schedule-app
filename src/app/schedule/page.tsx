@@ -20,7 +20,7 @@ function ScheduleContent() {
   const print = usePrintScale();
 
   const {
-    store, date, dayEmps, eveEmps, conflicts, employeeDirectory,
+    store, date, dayEmps, eveEmps, conflicts, canAutoBreak, employeeDirectory,
     setDate, setDayEmps, setEveEmps,
     lodRows, setLodRows,
     mgmtRows, setMgmtRows,
@@ -46,6 +46,7 @@ function ScheduleContent() {
         onDateChange={setDate}
         onAutoBreaks={handlers.handleAutoBreaks}
         onPrint={print}
+        canAutoBreak={canAutoBreak}
       />
 
       <div className="no-print w-full max-w-3xl mt-4 flex flex-col gap-3">

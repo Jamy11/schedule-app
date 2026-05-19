@@ -5,6 +5,8 @@ interface ScheduleHeaderProps {
   onDateChange: (date: string) => void;
   onAutoBreaks: () => void;
   onPrint: () => void;
+  /** When false, the Auto breaks button is disabled (needs a shift in both tables). */
+  canAutoBreak?: boolean;
 }
 
 export default function ScheduleHeader({
@@ -12,6 +14,7 @@ export default function ScheduleHeader({
   onDateChange,
   onAutoBreaks,
   onPrint,
+  canAutoBreak = true,
 }: ScheduleHeaderProps) {
   return (
     <div className="no-print w-full max-w-3xl flex items-center justify-between mb-4">
@@ -25,7 +28,13 @@ export default function ScheduleHeader({
         />
         <button
           onClick={onAutoBreaks}
-          className="no-print text-sm px-3 py-1.5 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 transition-colors"
+          disabled={!canAutoBreak}
+          title={
+            canAutoBreak
+              ? "Auto-assign breaks"
+              : "Add a shift to both the Day and Evening tables first"
+          }
+          className="no-print text-sm px-3 py-1.5 bg-gray-800 text-gray-200 rounded-md hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-800"
         >
           Auto breaks
         </button>

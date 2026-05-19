@@ -8,9 +8,12 @@ import {
   DEFAULT_STORE,
   DEFAULT_DAY_ROWS,
   DEFAULT_EVE_ROWS,
+  DAY_BREAK_FLOOR_MINS,
+  EVENING_BREAK_FLOOR_MINS,
 } from "@/constants/schedule";
 import { createEmployee, handleAddRow, handleDeleteRow } from "@/utils/employeeUtils";
 import { applyAutoBreaks, getBreakConflicts } from "@/utils/breakUtils";
+import { parseShift } from "@/utils/timeUtils";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -85,12 +88,21 @@ export function useSchedule(selectedStore: string) {
     [dayEmps, eveEmps]
   );
 
+  // Auto breaks need at least one shift in BOTH the Day and Evening tables
+  const canAutoBreak = useMemo(
+    () =>
+      dayEmps.some((e) => parseShift(e.shift)) &&
+      eveEmps.some((e) => parseShift(e.shift)),
+    [dayEmps, eveEmps]
+  );
+
   // ── handlers ───────────────────────────────────────────────────────────────
 
   const handleAutoBreaks = useCallback(() => {
-    setDayEmps((prev) => applyAutoBreaks(prev));
-    setEveEmps((prev) => applyAutoBreaks(prev));
-  }, []);
+    if (!canAutoBreak) return;
+    setDayEmps((prev) => applyAutoBreaks(prev, DAY_BREAK_FLOOR_MINS));
+    setEveEmps((prev) => applyAutoBreaks(prev, EVENING_BREAK_FLOOR_MINS));
+  }, [canAutoBreak]);
 
   const handleAddDayRow = useCallback(() => setDayEmps((prev) => handleAddRow(prev)), []);
   const handleAddEveRow = useCallback(() => setEveEmps((prev) => handleAddRow(prev)), []);
@@ -114,7 +126,7 @@ export function useSchedule(selectedStore: string) {
   // ── return ─────────────────────────────────────────────────────────────────
 
   return {
-    store, date, dayEmps, eveEmps, conflicts, employeeDirectory,
+    store, date, dayEmps, eveEmps, conflicts, canAutoBreak, employeeDirectory,
     setDate, setDayEmps, setEveEmps,
     lodRows, setLodRows,
     mgmtRows, setMgmtRows,

@@ -1,5 +1,11 @@
 import type { Employee } from "@/types/schedule";
-import { BREAK_WINDOW_MINS, BREAK_STAGGER_MINS } from "@/constants/schedule";
+import {
+  BREAK_WINDOW_MINS,
+  BREAK1_OFFSET_MINS,
+  LUNCH_OFFSET_MINS,
+  BREAK3_GAP_MINS,
+  SIXHR_BREAK2_OFFSET_MINS,
+} from "@/constants/schedule";
 import { parseShift, fmt, getShiftType } from "./timeUtils";
 
 export function calcBreaks(employee: Employee): Partial<Employee> {
@@ -26,104 +32,96 @@ export function calcBreaks(employee: Employee): Partial<Employee> {
 }
 
 /**
- * Apply auto breaks to all employees, staggering same-role employees so
- * no two people from the same group are on break at the same time.
+ * Auto-assign breaks for one shift table (Day or Evening) so no two people
+ * in that table are ever on break at the same time.
  *
- * Algorithm:
- * 1. Calculate ideal break slots for each employee from their shift midpoint.
- * 2. For each role group (sorted by shift start), check if the ideal b1/b3
- *    slot lands within BREAK_STAGGER_MINS of an already-assigned slot in
- *    that role. If so, push it forward by BREAK_STAGGER_MINS until clear.
- * 3. Rebuild b2 relative to the (possibly shifted) b1 position for 7-8hr.
+ * Per-employee ideal break times (by shift type):
+ *   7-8 hr → b1 = start + 2h, lunch = start + 4h, b3 = assigned b1 + 4h
+ *   6 hr   → b1 = start + 2h, b3 = start + 4h
+ *   ≤5 hr  → single 15-min break near the shift midpoint
+ *
+ * Employees are processed in shift-start order (earliest first pick). Each
+ * break is pushed to the next free 15-min slot at/after its ideal time so it
+ * does not overlap any break already assigned in the table. b1 (and 6hr b3)
+ * also cannot fall before `floorMins` — the earliest break time for the table.
+ *
+ * @param employees  rows of one shift table
+ * @param floorMins  earliest allowed break time (DAY_/EVENING_BREAK_FLOOR_MINS)
  */
-export function applyAutoBreaks(employees: Employee[]): Employee[] {
-  const filled = employees.filter((e) => e.shift.trim());
-  const unchanged = employees.filter((e) => !e.shift.trim());
+export function applyAutoBreaks(
+  employees: Employee[],
+  floorMins: number
+): Employee[] {
+  // Keep employees with a parseable shift, remembering their original row index
+  const parsed = employees
+    .map((emp, index) => {
+      const s = parseShift(emp.shift);
+      return s ? { emp, index, start: s.start, duration: s.duration } : null;
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
 
-  // Track assigned b1 and b3 slots per role (minutes from midnight)
-  const assignedSlots: Record<string, number[]> = {};
+  // Earlier shift start gets first pick of slots; stable on original order
+  const ordered = [...parsed].sort(
+    (a, b) => a.start - b.start || a.index - b.index
+  );
 
-  const findClearSlot = (role: string, ideal: number): number => {
-    const taken = assignedSlots[role] ?? [];
-    let slot = ideal;
-    // Push forward until there's no collision within the stagger window
-    let attempts = 0;
+  // Every break already placed in this table: { start, len } in minutes
+  const taken: { start: number; len: number }[] = [];
+
+  const round15 = (m: number) => Math.round(m / 15) * 15;
+  const overlaps = (aS: number, aL: number, bS: number, bL: number) =>
+    aS < bS + bL && bS < aS + aL;
+
+  /** Place a break of `len` minutes at the earliest free slot ≥ `ideal`. */
+  const place = (ideal: number, len: number): number => {
+    let slot = round15(ideal);
+    let guard = 0;
     while (
-      taken.some((t) => Math.abs(t - slot) < BREAK_STAGGER_MINS) &&
-      attempts < 20
+      taken.some((t) => overlaps(slot, len, t.start, t.len)) &&
+      guard < 200
     ) {
-      slot += BREAK_STAGGER_MINS;
-      attempts++;
+      slot += 15;
+      guard++;
     }
+    taken.push({ start: slot, len });
     return slot;
   };
 
-  const recordSlot = (role: string, slot: number) => {
-    if (!assignedSlots[role]) assignedSlots[role] = [];
-    assignedSlots[role].push(slot);
-  };
+  const breaksById = new Map<number, Partial<Employee>>();
 
-  // Sort by shift start so earlier-shift employees get first pick of slots
-  const sorted = [...filled].sort((a, b) => {
-    const sa = parseShift(a.shift);
-    const sb = parseShift(b.shift);
-    return (sa?.start ?? 0) - (sb?.start ?? 0);
-  });
+  for (const { emp, start, duration } of ordered) {
+    const type = getShiftType(duration);
+    const mid = start + Math.round(duration / 2);
 
-  const result = sorted.map((emp) => {
-    const s = parseShift(emp.shift);
-    if (!s) return emp;
-
-    const type = getShiftType(s.duration);
-    const mid = s.start + Math.round(s.duration / 2);
-    const role = emp.role || "__no_role__";
-
-    switch (type) {
-      case "7-8hr": {
-        const idealB1 = mid - 45;
-        const b1Slot = findClearSlot(role, idealB1);
-        recordSlot(role, b1Slot);
-
-        // b3 should be 30 min after b2 ends; b2 is 30 min, starts 15 after b1
-        const b2Start = b1Slot + 15;
-        const b2End = b2Start + 30;
-        const b3Slot = b2End;
-
-        return {
-          ...emp,
-          b1: fmt(b1Slot),
-          b2: `${fmt(b2Start)} – ${fmt(b2End)}`,
-          b3: fmt(b3Slot),
-        };
-      }
-      case "6hr": {
-        const idealB1 = mid - 15;
-        const b1Slot = findClearSlot(role, idealB1);
-        recordSlot(role, b1Slot);
-
-        // b3 is a second 15-min break; stagger it separately
-        const idealB3 = mid;
-        const b3Slot = findClearSlot(role, idealB3);
-        recordSlot(role, b3Slot);
-
-        return { ...emp, b1: fmt(b1Slot), b2: "", b3: fmt(b3Slot) };
-      }
-      case "5hr": {
-        const b1Slot = findClearSlot(role, mid);
-        recordSlot(role, b1Slot);
-        return { ...emp, b1: fmt(b1Slot), b2: "", b3: "" };
-      }
-      default:
-        return emp;
+    if (type === "7-8hr") {
+      const b1 = place(Math.max(start + BREAK1_OFFSET_MINS, floorMins), 15);
+      const b2 = place(start + LUNCH_OFFSET_MINS, 30);
+      const b3 = b1 + BREAK3_GAP_MINS;
+      taken.push({ start: b3, len: 15 });
+      breaksById.set(emp.id, {
+        b1: fmt(b1),
+        b2: `${fmt(b2)} – ${fmt(b2 + 30)}`,
+        b3: fmt(b3),
+      });
+    } else if (type === "6hr") {
+      const b1 = place(Math.max(start + BREAK1_OFFSET_MINS, floorMins), 15);
+      const b3 = place(
+        Math.max(start + SIXHR_BREAK2_OFFSET_MINS, floorMins),
+        15
+      );
+      breaksById.set(emp.id, { b1: fmt(b1), b2: "", b3: fmt(b3) });
+    } else {
+      // 5 hr or shorter — a single 15-min break near the shift midpoint
+      const b1 = place(Math.max(mid, floorMins), 15);
+      breaksById.set(emp.id, { b1: fmt(b1), b2: "", b3: "" });
     }
-  });
+  }
 
-  // Restore original order (result is sorted, employees may not be)
-  const byId = new Map(result.map((e) => [e.id, e]));
-  return [
-    ...employees.map((e) => byId.get(e.id) ?? e),
-    ...unchanged,
-  ].filter((e, i, arr) => arr.findIndex((x) => x.id === e.id) === i);
+  // Merge the assigned breaks back onto the original employee rows, in order
+  return employees.map((emp) => {
+    const b = breaksById.get(emp.id);
+    return b ? { ...emp, ...b } : emp;
+  });
 }
 
 export function breaksOverlap(a: Employee, b: Employee): boolean {
