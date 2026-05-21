@@ -1,33 +1,36 @@
 import type { EmployeeData } from "@/types/schedule";
 
-const MANAGER_ROLES = ["Manager", "Supervisor"] as const;
+// Substring-match on the role string so multi-role employees match correctly
+// (e.g. "Supervisor, Tech" still counts as a Supervisor).
+const hasRole = (role: string, keyword: string) =>
+  role.toLowerCase().includes(keyword.toLowerCase());
 
 /**
- * Returns the names of employees who hold a management or supervisor role.
+ * Returns the names of employees who hold a Manager or Supervisor role.
  * Used to populate name dropdowns in LOD, Management Lunches, and MGMT tables.
  */
 export function getManagerNames(directory: EmployeeData[]): string[] {
   return directory
-    .filter((e) => (MANAGER_ROLES as readonly string[]).includes(e.role))
+    .filter((e) => hasRole(e.role, "Manager") || hasRole(e.role, "Supervisor"))
     .map((e) => e.name);
 }
 
 /**
- * Returns the names of employees whose role is 'Receiving'.
+ * Returns the names of employees whose role includes 'Receiving'.
  * Used to populate the Receiving column dropdown in the Receiving table.
  */
 export function getReceivingNames(directory: EmployeeData[]): string[] {
   return directory
-    .filter((e) => e.role === "Receiving")
+    .filter((e) => hasRole(e.role, "Receiving"))
     .map((e) => e.name);
 }
 
 /**
- * Returns the names of employees whose role is 'Wireless'.
+ * Returns the names of employees whose role includes 'Wireless'.
  * Used to populate the Bell column dropdown in the Bell table.
  */
 export function getWirelessNames(directory: EmployeeData[]): string[] {
   return directory
-    .filter((e) => e.role === "Wireless")
+    .filter((e) => hasRole(e.role, "Wireless"))
     .map((e) => e.name);
 }
