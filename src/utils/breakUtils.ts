@@ -2,11 +2,15 @@ import type { Employee } from "@/types/schedule";
 import {
   BREAK_WINDOW_MINS,
   BREAK1_OFFSET_MINS,
-  LUNCH_OFFSET_MINS,
-  BREAK3_GAP_MINS,
-  SIXHR_BREAK2_OFFSET_MINS,
+  LAST_BREAK_BEFORE_END_MINS,
+  NO_BREAK_ROLE_KEYWORD,
 } from "@/constants/schedule";
 import { parseShift, fmt, getShiftType } from "./timeUtils";
+
+/** Managers run the floor and don't take scheduled breaks. */
+export function isNoBreakRole(role: string): boolean {
+  return role.toLowerCase().includes(NO_BREAK_ROLE_KEYWORD.toLowerCase());
+}
 
 export function calcBreaks(employee: Employee): Partial<Employee> {
   const s = parseShift(employee.shift);
@@ -32,31 +36,43 @@ export function calcBreaks(employee: Employee): Partial<Employee> {
 }
 
 /**
- * Auto-assign breaks for one shift table (Day or Evening) so no two people
- * in that table are ever on break at the same time.
+ * Auto-assign breaks for one shift table (Day or Evening) so no two people in
+ * that table are ever on break at the same time, and no break ever falls
+ * outside the employee's shift. A 15-min break reserves 15 min; the lunch
+ * reserves its full 30 min, so lunches never overlap each other or any break.
  *
- * Per-employee ideal break times (by shift type):
- *   7-8 hr → b1 = start + 2h, lunch = start + 4h, b3 = assigned b1 + 4h
- *   6 hr   → b1 = start + 2h, b3 = start + 4h
+ * Ideal break times (by shift type):
+ *   7-8 hr → b1 = start + 2h, lunch = shift midpoint, b3 = end − 2h
+ *   6 hr   → b1 = start + 2h, b3 = end − 2h
  *   ≤5 hr  → single 15-min break near the shift midpoint
  *
- * Employees are processed in shift-start order (earliest first pick). Each
- * break is pushed to the next free 15-min slot at/after its ideal time so it
- * does not overlap any break already assigned in the table. b1 (and 6hr b3)
- * also cannot fall before `floorMins` — the earliest break time for the table.
+ * Placement runs in three passes — all first breaks, then all lunches, then all
+ * last breaks. Lunches (the hardest 30-min blocks to fit) are placed before the
+ * last breaks so they claim space first. Each break is dropped at the free slot
+ * nearest its ideal within an allowed window, so times stay close to ideal and
+ * inside the shift. When a shift table is genuinely over-subscribed the search
+ * falls back to a best-effort slot.
+ *
+ * Managers (NO_BREAK_ROLE_KEYWORD) are skipped — their break cells are cleared
+ * and they reserve no slots.
  *
  * @param employees  rows of one shift table
- * @param floorMins  earliest allowed break time (DAY_/EVENING_BREAK_FLOOR_MINS)
  */
-export function applyAutoBreaks(
-  employees: Employee[],
-  floorMins: number
-): Employee[] {
-  // Keep employees with a parseable shift, remembering their original row index
+export function applyAutoBreaks(employees: Employee[]): Employee[] {
+  // Keep non-manager employees with a parseable shift, remembering row order
   const parsed = employees
     .map((emp, index) => {
+      if (isNoBreakRole(emp.role)) return null;
       const s = parseShift(emp.shift);
-      return s ? { emp, index, start: s.start, duration: s.duration } : null;
+      if (!s) return null;
+      return {
+        emp,
+        index,
+        start: s.start,
+        end: s.end,
+        type: getShiftType(s.duration),
+        mid: s.start + Math.round(s.duration / 2),
+      };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null);
 
@@ -71,56 +87,73 @@ export function applyAutoBreaks(
   const round15 = (m: number) => Math.round(m / 15) * 15;
   const overlaps = (aS: number, aL: number, bS: number, bL: number) =>
     aS < bS + bL && bS < aS + aL;
+  const collides = (slot: number, len: number) =>
+    taken.some((t) => overlaps(slot, len, t.start, t.len));
 
-  /** Place a break of `len` minutes at the earliest free slot ≥ `ideal`. */
-  const place = (ideal: number, len: number): number => {
-    let slot = round15(ideal);
-    let guard = 0;
-    while (
-      taken.some((t) => overlaps(slot, len, t.start, t.len)) &&
-      guard < 200
-    ) {
-      slot += 15;
-      guard++;
+  /**
+   * Reserve a slot of length `len` at the free position nearest `ideal` within
+   * [lo, hi] (searching outward in both directions). Falls back to the clamped
+   * ideal if the window is full.
+   */
+  const place = (ideal: number, lo: number, hi: number, len: number): number => {
+    lo = round15(lo);
+    hi = round15(hi);
+    let target = round15(ideal);
+    if (target < lo) target = lo;
+    if (target > hi) target = hi;
+
+    const steps = Math.ceil((hi - lo) / 15) + 1;
+    for (let d = 0; d <= steps; d++) {
+      for (const cand of [target - d * 15, target + d * 15]) {
+        if (cand < lo || cand > hi) continue;
+        if (!collides(cand, len)) {
+          taken.push({ start: cand, len });
+          return cand;
+        }
+      }
     }
-    taken.push({ start: slot, len });
-    return slot;
+    taken.push({ start: target, len });
+    return target;
   };
 
-  const breaksById = new Map<number, Partial<Employee>>();
+  // breaks[id] = { b1, b2, b3 } in minutes; assigned across the three passes
+  const slots = new Map<number, { b1: number; b2?: number; b3?: number }>();
 
-  for (const { emp, start, duration } of ordered) {
-    const type = getShiftType(duration);
-    const mid = start + Math.round(duration / 2);
-
-    if (type === "7-8hr") {
-      const b1 = place(Math.max(start + BREAK1_OFFSET_MINS, floorMins), 15);
-      const b2 = place(start + LUNCH_OFFSET_MINS, 30);
-      const b3 = b1 + BREAK3_GAP_MINS;
-      taken.push({ start: b3, len: 15 });
-      breaksById.set(emp.id, {
-        b1: fmt(b1),
-        b2: fmt(b2),
-        b3: fmt(b3),
-      });
-    } else if (type === "6hr") {
-      const b1 = place(Math.max(start + BREAK1_OFFSET_MINS, floorMins), 15);
-      const b3 = place(
-        Math.max(start + SIXHR_BREAK2_OFFSET_MINS, floorMins),
-        15
-      );
-      breaksById.set(emp.id, { b1: fmt(b1), b2: "", b3: fmt(b3) });
-    } else {
-      // 5 hr or shorter — a single 15-min break near the shift midpoint
-      const b1 = place(Math.max(mid, floorMins), 15);
-      breaksById.set(emp.id, { b1: fmt(b1), b2: "", b3: "" });
-    }
+  // Pass 1 — first breaks (15 min)
+  for (const e of ordered) {
+    const b1 =
+      e.type === "5hr" || e.type === "none"
+        ? place(e.mid, e.start + 60, e.end - 15, 15) // single break near midpoint
+        : place(e.start + BREAK1_OFFSET_MINS, e.start + BREAK1_OFFSET_MINS, e.mid, 15);
+    slots.set(e.emp.id, { b1 });
   }
 
-  // Merge the assigned breaks back onto the original employee rows, in order
+  // Pass 2 — lunches (30 min), 7-8hr only, placed before last breaks
+  for (const e of ordered) {
+    if (e.type !== "7-8hr") continue;
+    const s = slots.get(e.emp.id)!;
+    s.b2 = place(e.mid, s.b1 + 15, e.end - 45, 30);
+  }
+
+  // Pass 3 — last breaks (15 min), 7-8hr and 6hr
+  for (const e of ordered) {
+    if (e.type !== "7-8hr" && e.type !== "6hr") continue;
+    const s = slots.get(e.emp.id)!;
+    const after = s.b2 != null ? s.b2 + 30 : s.b1 + 15;
+    s.b3 = place(e.end - LAST_BREAK_BEFORE_END_MINS, after, e.end - 15, 15);
+  }
+
+  // Merge results: clear manager breaks, apply assigned breaks, leave the rest
   return employees.map((emp) => {
-    const b = breaksById.get(emp.id);
-    return b ? { ...emp, ...b } : emp;
+    if (isNoBreakRole(emp.role)) return { ...emp, b1: "", b2: "", b3: "" };
+    const s = slots.get(emp.id);
+    if (!s) return emp;
+    return {
+      ...emp,
+      b1: fmt(s.b1),
+      b2: s.b2 != null ? fmt(s.b2) : "",
+      b3: s.b3 != null ? fmt(s.b3) : "",
+    };
   });
 }
 

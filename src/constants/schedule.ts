@@ -16,9 +16,8 @@ export const DEFAULT_DAY_ROWS = 6;
 export const DEFAULT_EVE_ROWS = 5;
 
 // ── Auto-break timing (all values in minutes) ────────────────────────────────
-export const BREAK1_OFFSET_MINS = 120;           // first break  = shift start + 2h
-export const LUNCH_OFFSET_MINS = 240;            // lunch (b2)   = shift start + 4h
-export const BREAK3_GAP_MINS = 240;              // 7-8hr b3     = assigned break1 + 4h
-export const SIXHR_BREAK2_OFFSET_MINS = 240;     // 6hr  b3      = shift start + 4h
-export const DAY_BREAK_FLOOR_MINS = 10 * 60 + 30;   // earliest day-shift break: 10:30am
-export const EVENING_BREAK_FLOOR_MINS = 13 * 60;    // earliest evening-shift break: 1:00pm
+export const BREAK1_OFFSET_MINS = 120;           // first break = shift start + 2h
+export const LAST_BREAK_BEFORE_END_MINS = 120;   // last break  = shift end − 2h
+
+// Roles excluded from auto-breaks (managers run the floor, take breaks ad hoc)
+export const NO_BREAK_ROLE_KEYWORD = "Manager";

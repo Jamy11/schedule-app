@@ -8,8 +8,6 @@ import {
   DEFAULT_STORE,
   DEFAULT_DAY_ROWS,
   DEFAULT_EVE_ROWS,
-  DAY_BREAK_FLOOR_MINS,
-  EVENING_BREAK_FLOOR_MINS,
 } from "@/constants/schedule";
 import { createEmployee, handleAddRow, handleDeleteRow } from "@/utils/employeeUtils";
 import { applyAutoBreaks, getBreakConflicts } from "@/utils/breakUtils";
@@ -100,8 +98,8 @@ export function useSchedule(selectedStore: string) {
 
   const handleAutoBreaks = useCallback(() => {
     if (!canAutoBreak) return;
-    setDayEmps((prev) => applyAutoBreaks(prev, DAY_BREAK_FLOOR_MINS));
-    setEveEmps((prev) => applyAutoBreaks(prev, EVENING_BREAK_FLOOR_MINS));
+    setDayEmps((prev) => applyAutoBreaks(prev));
+    setEveEmps((prev) => applyAutoBreaks(prev));
   }, [canAutoBreak]);
 
   const handleAddDayRow = useCallback(() => setDayEmps((prev) => handleAddRow(prev)), []);
