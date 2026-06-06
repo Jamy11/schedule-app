@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import { Employee, EmployeeData } from "@/types/schedule";
-import EmployeeScheduleRow from "./EmployeeScheduleRow";
+import EmployeeScheduleRow, { BreakField } from "./EmployeeScheduleRow";
 import ShiftTimePicker from "./ShiftTimePicker";
+import BreakPicker from "./BreakPicker";
 import { handleTimeSelection } from "@/utils/scheduleUtils";
+
+const BREAK_TITLES: Record<BreakField, string> = {
+  b1: "15 min break",
+  b2: "½ hr lunch",
+  b3: "15 min break",
+};
 
 interface ShiftScheduleTableProps {
   title: string;
@@ -25,6 +32,12 @@ export default function ShiftScheduleTable({
 }: ShiftScheduleTableProps) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingEmpId, setEditingEmpId] = useState<number | null>(null);
+
+  // Break picker state
+  const [breakTarget, setBreakTarget] = useState<{
+    empId: number;
+    field: BreakField;
+  } | null>(null);
 
   const handleEmployeeUpdate = (updated: Employee) =>
     onEmployeesChange(
@@ -48,7 +61,21 @@ export default function ShiftScheduleTable({
     setEditingEmpId(null);
   };
 
+  const handleBreakClick = (empId: number, field: BreakField) =>
+    setBreakTarget({ empId, field });
+
+  const handleBreakConfirm = (value: string) => {
+    if (!breakTarget) return;
+    onEmployeesChange(
+      employees.map((e) =>
+        e.id === breakTarget.empId ? { ...e, [breakTarget.field]: value } : e,
+      ),
+    );
+    setBreakTarget(null);
+  };
+
   const editingEmployee = employees.find((e) => e.id === editingEmpId);
+  const breakEmployee = employees.find((e) => e.id === breakTarget?.empId);
 
   return (
     <>
@@ -95,6 +122,7 @@ export default function ShiftScheduleTable({
                 onEmployeeChange={handleEmployeeUpdate}
                 onRemoveEmployee={onRemoveEmployee}
                 onOpenShiftPicker={handleShiftClick}
+                onOpenBreakPicker={handleBreakClick}
               />
             ))}
           </tbody>
@@ -110,6 +138,16 @@ export default function ShiftScheduleTable({
         onConfirm={handleTimeConfirm}
         initialValue={editingEmployee?.shift}
       />
+
+      {breakTarget && breakEmployee && (
+        <BreakPicker
+          isOpen
+          title={BREAK_TITLES[breakTarget.field]}
+          initialValue={breakEmployee[breakTarget.field]}
+          onClose={() => setBreakTarget(null)}
+          onConfirm={handleBreakConfirm}
+        />
+      )}
     </>
   );
 }

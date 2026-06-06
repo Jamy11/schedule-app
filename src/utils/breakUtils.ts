@@ -19,7 +19,7 @@ export function calcBreaks(employee: Employee): Partial<Employee> {
     case "7-8hr":
       return {
         b1: fmt(mid - 45),
-        b2: `${fmt(mid - 30)} – ${fmt(mid)}`,
+        b2: fmt(mid - 30),
         b3: fmt(mid),
       };
     case "6hr":
@@ -100,7 +100,7 @@ export function applyAutoBreaks(
       taken.push({ start: b3, len: 15 });
       breaksById.set(emp.id, {
         b1: fmt(b1),
-        b2: `${fmt(b2)} – ${fmt(b2 + 30)}`,
+        b2: fmt(b2),
         b3: fmt(b3),
       });
     } else if (type === "6hr") {
