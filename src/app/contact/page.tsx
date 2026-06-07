@@ -23,8 +23,8 @@ export default function ContactPage() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <ContactCard
             label="Email"
-            value="jamyarrahman@gmail.com"
-            href="mailto:jamyarrahman@gmail.com"
+            value="jamyarrahman82@gmail.com"
+            href="mailto:jamyarrahman82@gmail.com"
           />
           <ContactCard
             label="GitHub"
