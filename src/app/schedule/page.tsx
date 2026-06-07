@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { DEFAULT_STORE } from "@/constants/schedule";
 import { getManagerNames, getReceivingNames, getWirelessNames } from "@/utils/employeeFilters";
+import { getShiftPresets } from "@/constants/shiftPresets";
 import { useSchedule } from "@/hooks/useSchedule";
 import { usePrintScale } from "@/hooks/usePrintScale";
 import ScheduleHeader from "@/components/schedule/ScheduleHeader";
@@ -37,6 +38,11 @@ function ScheduleContent() {
   // Names of Wireless employees — used in Bell table
   const wirelessNames = getWirelessNames(employeeDirectory);
 
+  // Common shift slots per table (currently defaults; future: per-store from DB)
+  const dayPresets = getShiftPresets(store, "day");
+  const evePresets = getShiftPresets(store, "evening");
+  const mgmtPresets = getShiftPresets(store, "mgmt");
+
   return (
     <div className="schedule-page min-h-screen bg-gray-100 flex flex-col items-center py-8 px-4">
       <div className="print-store-info hidden">Store {store} — {date}</div>
@@ -65,6 +71,7 @@ function ScheduleContent() {
           onEmployeesChange={setDayEmps}
           onAddEmployee={handlers.handleAddDayRow}
           onRemoveEmployee={handlers.handleDeleteDayRow}
+          shiftPresets={dayPresets}
         />
 
         <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
@@ -77,6 +84,7 @@ function ScheduleContent() {
           onEmployeesChange={setEveEmps}
           onAddEmployee={handlers.handleAddEveRow}
           onRemoveEmployee={handlers.handleDeleteEveRow}
+          shiftPresets={evePresets}
         />
 
         <div className="h-1.5 bg-gray-100 border-y border-gray-200" />
@@ -116,6 +124,7 @@ function ScheduleContent() {
               onRowsChange={setMgmtRows}
               columnDropdowns={{ MGMT: managerNames }}
               shiftColumns={["Shift"]}
+              shiftPresets={mgmtPresets}
             />
 
             <div className="h-1.5 bg-gray-100 border-y border-gray-200" />

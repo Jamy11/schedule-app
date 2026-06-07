@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ShiftTimePicker from "./ShiftTimePicker";
 import LunchTimePicker from "./LunchTimePicker";
+import { ShiftPreset } from "@/constants/shiftPresets";
 import { parseShift } from "@/utils/timeUtils";
 
 export type InfoRow = Record<string, string>;
@@ -20,6 +21,8 @@ interface InfoTableProps {
   shiftHrsMap?: Record<string, string>;
   /** Column names that should open the LunchTimePicker on click (10am–6pm, 30–60 min). */
   lunchColumns?: string[];
+  /** Common shift slots shown as quick-pick buttons in the shift picker. */
+  shiftPresets?: ShiftPreset[];
 }
 
 function makeEmptyRow(columns: string[]): InfoRow {
@@ -35,6 +38,7 @@ export default function InfoTable({
   shiftColumns = [],
   shiftHrsMap = {},
   lunchColumns = [],
+  shiftPresets = [],
 }: InfoTableProps) {
   const [pickerOpen, setPickerOpen] = useState<{ row: number; col: string } | null>(null);
   const [lunchPickerOpen, setLunchPickerOpen] = useState<{ row: number; col: string } | null>(null);
@@ -214,6 +218,7 @@ export default function InfoTable({
         <ShiftTimePicker
           isOpen
           initialValue={rows[pickerOpen.row][pickerOpen.col] ?? ""}
+          presets={shiftPresets}
           onClose={() => setPickerOpen(null)}
           onConfirm={(start, end) => {
             const shiftStr = `${start} – ${end}`;

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ShiftPreset } from "@/constants/shiftPresets";
 
 interface ShiftTimePickerProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (startTime: string, endTime: string) => void;
   initialValue?: string;
+  /** Common shift slots shown as quick-pick buttons (per table / store). */
+  presets?: ShiftPreset[];
 }
 
 export default function ShiftTimePicker({
@@ -14,6 +17,7 @@ export default function ShiftTimePicker({
   onClose,
   onConfirm,
   initialValue,
+  presets = [],
 }: ShiftTimePickerProps) {
   const [startHour, setStartHour] = useState("8");
   const [startMin, setStartMin] = useState("00");
@@ -84,39 +88,38 @@ export default function ShiftTimePicker({
     }
   }, [endHour, endMin, endPeriod]);
 
+  // Apply a "h:mm(am|pm)" start + end pair to the picker fields + duration.
+  const applyShift = (startStr: string, endStr: string) => {
+    const s = startStr.match(/(\d+):(\d+)(am|pm)/i);
+    const e = endStr.match(/(\d+):(\d+)(am|pm)/i);
+    if (!s || !e) return;
+
+    const sPeriod = s[3].toLowerCase();
+    const ePeriod = e[3].toLowerCase();
+    setStartHour(s[1]);
+    setStartMin(s[2]);
+    setStartPeriod(sPeriod);
+    setEndHour(e[1]);
+    setEndMin(e[2]);
+    setEndPeriod(ePeriod);
+
+    const startTotal = get24HourValue(s[1], sPeriod) * 60 + parseInt(s[2], 10);
+    const endTotal = get24HourValue(e[1], ePeriod) * 60 + parseInt(e[2], 10);
+    const duration = (endTotal - startTotal + 24 * 60) % (24 * 60) || 24 * 60;
+    if (duration >= 3 * 60 && duration <= 12 * 60) {
+      setDurationMinutes(duration);
+    }
+  };
+
   // Parse initial value if provided
   useEffect(() => {
     if (initialValue && isOpen) {
       const match = initialValue.match(
-        /(\d+):(\d+)(am|pm)\s*[-–]\s*(\d+):(\d+)(am|pm)/i,
+        /(\d+:\d+(?:am|pm))\s*[-–]\s*(\d+:\d+(?:am|pm))/i,
       );
-      if (match) {
-        const parsedStartHour = match[1];
-        const parsedStartMin = match[2];
-        const parsedStartPeriod = match[3].toLowerCase();
-        const parsedEndHour = match[4];
-        const parsedEndMin = match[5];
-        const parsedEndPeriod = match[6].toLowerCase();
-
-        setStartHour(parsedStartHour);
-        setStartMin(parsedStartMin);
-        setStartPeriod(parsedStartPeriod);
-        setEndHour(parsedEndHour);
-        setEndMin(parsedEndMin);
-        setEndPeriod(parsedEndPeriod);
-
-        const startHour24 = get24HourValue(parsedStartHour, parsedStartPeriod);
-        const endHour24 = get24HourValue(parsedEndHour, parsedEndPeriod);
-        const startTotal = startHour24 * 60 + parseInt(parsedStartMin);
-        const endTotal = endHour24 * 60 + parseInt(parsedEndMin);
-        const duration =
-          (endTotal - startTotal + 24 * 60) % (24 * 60) || 24 * 60;
-
-        if (duration >= 3 * 60 && duration <= 12 * 60) {
-          setDurationMinutes(duration);
-        }
-      }
+      if (match) applyShift(match[1], match[2]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initialValue]);
 
   const confirmSelection = () => {
@@ -132,6 +135,30 @@ export default function ShiftTimePicker({
     return mins === 0 ? `${hours}` : `${hours}.30`;
   };
 
+  // Total minutes for a "h:mm(am|pm)" string, or null if unparseable.
+  const presetMinutes = (str: string): number | null => {
+    const m = str.match(/(\d+):(\d+)(am|pm)/i);
+    if (!m) return null;
+    return get24HourValue(m[1], m[3].toLowerCase()) * 60 + parseInt(m[2], 10);
+  };
+
+  // Friendly duration label for a preset, e.g. "8 hrs" or "8h 15m".
+  const presetDuration = (p: ShiftPreset): string => {
+    const s = presetMinutes(p.start);
+    const e = presetMinutes(p.end);
+    if (s == null || e == null) return "";
+    const mins = (e - s + 24 * 60) % (24 * 60) || 24 * 60;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m === 0 ? `${h} hrs` : `${h}h ${m}m`;
+  };
+
+  // Whether a preset matches the currently selected start + end.
+  const isPresetActive = (p: ShiftPreset): boolean =>
+    presetMinutes(p.start) ===
+      getTotalMinutes(startHour, startMin, startPeriod) &&
+    presetMinutes(p.end) === getTotalMinutes(endHour, endMin, endPeriod);
+
   if (!isOpen) return null;
 
   const hourOptions = Array.from({ length: 12 }, (_, i) => String(i + 1));
@@ -143,6 +170,47 @@ export default function ShiftTimePicker({
         <h2 className="text-xl font-bold mb-6 text-gray-900 text-center">
           Select Shift Time
         </h2>
+
+        {/* Common shift slots — quick picks */}
+        {presets.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-semibold text-gray-700">
+                Common shifts
+              </label>
+              <span className="text-xs text-gray-400">tap to fill</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {presets.map((p) => {
+                const active = isPresetActive(p);
+                return (
+                  <button
+                    key={`${p.start}-${p.end}`}
+                    type="button"
+                    onClick={() => applyShift(p.start, p.end)}
+                    className={`flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors ${
+                      active
+                        ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
+                        : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50/60"
+                    }`}
+                  >
+                    <span
+                      className={`text-sm font-semibold ${
+                        active ? "text-blue-700" : "text-gray-800"
+                      }`}
+                    >
+                      {p.start} – {p.end}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {presetDuration(p)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="mt-6 border-t border-gray-200" />
+          </div>
+        )}
 
         <div className="space-y-6 mb-8">
           {/* Start Time */}

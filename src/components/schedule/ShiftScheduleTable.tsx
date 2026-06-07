@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Employee, EmployeeData } from "@/types/schedule";
+import { ShiftPreset } from "@/constants/shiftPresets";
 import EmployeeScheduleRow, { BreakField } from "./EmployeeScheduleRow";
 import ShiftTimePicker from "./ShiftTimePicker";
 import BreakPicker from "./BreakPicker";
@@ -20,6 +21,7 @@ interface ShiftScheduleTableProps {
   onEmployeesChange: (emps: Employee[]) => void;
   onAddEmployee: () => void;
   onRemoveEmployee: (id: number) => void;
+  shiftPresets?: ShiftPreset[];
 }
 
 export default function ShiftScheduleTable({
@@ -29,6 +31,7 @@ export default function ShiftScheduleTable({
   onEmployeesChange,
   onAddEmployee,
   onRemoveEmployee,
+  shiftPresets = [],
 }: ShiftScheduleTableProps) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [editingEmpId, setEditingEmpId] = useState<number | null>(null);
@@ -137,6 +140,7 @@ export default function ShiftScheduleTable({
         }}
         onConfirm={handleTimeConfirm}
         initialValue={editingEmployee?.shift}
+        presets={shiftPresets}
       />
 
       {breakTarget && breakEmployee && (
