@@ -10,7 +10,7 @@ export const BREAK_RULES: Record<ShiftType, { b1: number; b2: number; b3: number
   "none":  { b1: 0,  b2: 0,  b3: 0  },
 };
 
-export const STORE_OPTIONS = ["101", "464", "65"] as const;
+export const STORE_OPTIONS = ["101", "65"] as const;
 export const DEFAULT_STORE = "101";
 export const DEFAULT_DAY_ROWS = 6;
 export const DEFAULT_EVE_ROWS = 5;

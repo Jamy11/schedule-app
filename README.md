@@ -92,7 +92,7 @@ Employee directories live in `.env.local` as a single `EMPLOYEE_DATA` JSON
 string keyed by store number:
 
 ```env
-EMPLOYEE_DATA={"101":[{"name":"Ali","role":"Supervisor, Tech"}],"464":[]}
+EMPLOYEE_DATA={"101":[{"name":"Ali","role":"Supervisor, Tech"}],"65":[]}
 ```
 
 The API route at `src/app/api/employees/route.ts` reads this and serves

@@ -34,7 +34,7 @@ Three routes: `/` (marketing home), `/contact`, and `/schedule` (the actual tool
                  └─ InfoTable × 5            (LOD, MGMT, Receiving, Lunches, Bell)
 ```
 
-Employee data lives in `.env.local` as `EMPLOYEE_DATA` — a single-line minified JSON string keyed by store number (`"101"`, `"464"`, `"65"`), each value an array of `{ name, role }`. The API route parses this env var directly; no file I/O. To add or edit employees, update `EMPLOYEE_DATA` and **restart the dev server** (env changes aren't hot-reloaded). Roles are free-form strings, often multi-role like `"Supervisor, Tech"` or `"Cash, Print, Tech"`.
+Employee data lives in `.env.local` as `EMPLOYEE_DATA` — a single-line minified JSON string keyed by store number (`"101"`, `"65"`), each value an array of `{ name, role }`. The API route parses this env var directly; no file I/O. To add or edit employees, update `EMPLOYEE_DATA` and **restart the dev server** (env changes aren't hot-reloaded). Roles are free-form strings, often multi-role like `"Supervisor, Tech"` or `"Cash, Print, Tech"`.
 
 ### State
 
