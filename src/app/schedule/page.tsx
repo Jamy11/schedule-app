@@ -60,8 +60,9 @@ function ScheduleContent() {
         <ScheduleConflictWarnings warnings={conflicts} />
       </div>
 
-      {/* Main schedule document */}
-      <div className="schedule-content w-full max-w-3xl bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm mt-3">
+      {/* Main schedule document — wrapper is the print-fit clip box */}
+      <div className="print-fit-wrap w-full max-w-3xl mt-3">
+      <div className="schedule-content w-full bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
 
         {/* Table 1 — Day Shift */}
         <ShiftScheduleTable
@@ -151,6 +152,7 @@ function ScheduleContent() {
           </div>
         </div>
 
+      </div>
       </div>
 
       <ResetButton onClick={handlers.handleReset} />

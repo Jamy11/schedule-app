@@ -66,13 +66,17 @@ body {
     align-items: stretch !important;
   }
 
-  /* Schedule card fills full width, no rounded corners or shadow */
+  /* Print-fit wrapper + schedule card fill full page width */
+  .print-fit-wrap {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
   .schedule-content {
     max-width: 100% !important;
     width: 100% !important;
     border-radius: 0 !important;
     box-shadow: none !important;
-    margin-top: 4px !important;
   }
 
   /* Hide dropdown arrows on select elements */
