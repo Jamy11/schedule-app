@@ -25,7 +25,6 @@ export default function ShiftTimePicker({
   const [endHour, setEndHour] = useState("4");
   const [endMin, setEndMin] = useState("00");
   const [endPeriod, setEndPeriod] = useState("pm");
-  const [durationMinutes, setDurationMinutes] = useState(8 * 60);
 
   const get24HourValue = (hour: string, period: string) =>
     period === "pm" && hour !== "12"
@@ -39,76 +38,18 @@ export default function ShiftTimePicker({
     return hour24 * 60 + parseInt(min, 10);
   };
 
-  const setEndFromTotalMinutes = (totalMinutes: number) => {
-    const normalized = (totalMinutes + 24 * 60) % (24 * 60);
-    const endHour24 = Math.floor(normalized / 60);
-    const endHour12 =
-      endHour24 > 12 ? endHour24 - 12 : endHour24 === 0 ? 12 : endHour24;
-    const endPeriod = endHour24 >= 12 ? "pm" : "am";
-
-    setEndHour(String(endHour12));
-    setEndMin(String(normalized % 60).padStart(2, "0"));
-    setEndPeriod(endPeriod);
-  };
-
-  const updateEndTime = (duration = durationMinutes) => {
-    const startMinutes = getTotalMinutes(startHour, startMin, startPeriod);
-    setEndFromTotalMinutes(startMinutes + duration);
-  };
-
-  const updateDurationFromEndTime = () => {
-    const startMinutes = getTotalMinutes(startHour, startMin, startPeriod);
-    const endMinutes = getTotalMinutes(endHour, endMin, endPeriod);
-    const rawDuration =
-      (endMinutes - startMinutes + 24 * 60) % (24 * 60) || 24 * 60;
-    const clampedDuration = Math.min(Math.max(rawDuration, 3 * 60), 12 * 60);
-
-    if (clampedDuration !== durationMinutes) {
-      setDurationMinutes(clampedDuration);
-    }
-  };
-
-  // Auto-calculate end time when start or duration changes
-  useEffect(() => {
-    if (startHour && startMin && startPeriod) {
-      updateEndTime();
-    }
-  }, [startHour, startMin, startPeriod, durationMinutes]);
-
-  useEffect(() => {
-    if (
-      startHour &&
-      startMin &&
-      startPeriod &&
-      endHour &&
-      endMin &&
-      endPeriod
-    ) {
-      updateDurationFromEndTime();
-    }
-  }, [endHour, endMin, endPeriod]);
-
-  // Apply a "h:mm(am|pm)" start + end pair to the picker fields + duration.
+  // Apply a "h:mm(am|pm)" start + end pair to the picker fields.
   const applyShift = (startStr: string, endStr: string) => {
     const s = startStr.match(/(\d+):(\d+)(am|pm)/i);
     const e = endStr.match(/(\d+):(\d+)(am|pm)/i);
     if (!s || !e) return;
 
-    const sPeriod = s[3].toLowerCase();
-    const ePeriod = e[3].toLowerCase();
     setStartHour(s[1]);
     setStartMin(s[2]);
-    setStartPeriod(sPeriod);
+    setStartPeriod(s[3].toLowerCase());
     setEndHour(e[1]);
     setEndMin(e[2]);
-    setEndPeriod(ePeriod);
-
-    const startTotal = get24HourValue(s[1], sPeriod) * 60 + parseInt(s[2], 10);
-    const endTotal = get24HourValue(e[1], ePeriod) * 60 + parseInt(e[2], 10);
-    const duration = (endTotal - startTotal + 24 * 60) % (24 * 60) || 24 * 60;
-    if (duration >= 3 * 60 && duration <= 12 * 60) {
-      setDurationMinutes(duration);
-    }
+    setEndPeriod(e[3].toLowerCase());
   };
 
   // Parse initial value if provided
@@ -127,12 +68,6 @@ export default function ShiftTimePicker({
     const endTime = `${endHour}:${endMin}${endPeriod}`;
     onConfirm(startTime, endTime);
     onClose();
-  };
-
-  const formatDurationLabel = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return mins === 0 ? `${hours}` : `${hours}.30`;
   };
 
   // Total minutes for a "h:mm(am|pm)" string, or null if unparseable.
@@ -254,31 +189,6 @@ export default function ShiftTimePicker({
                   PM
                 </option>
               </select>
-            </div>
-          </div>
-
-          {/* Shift Duration */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-semibold text-gray-700">
-                Shift Duration
-              </label>
-              <span className="text-lg font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                {formatDurationLabel(durationMinutes)} hrs
-              </span>
-            </div>
-            <input
-              type="range"
-              min={3 * 60}
-              max={12 * 60}
-              step={30}
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full h-2 rounded-full bg-gray-200 accent-blue-600"
-            />
-            <div className="mt-2 flex justify-between text-xs text-gray-500">
-              <span>3h</span>
-              <span>12h</span>
             </div>
           </div>
 
